@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ceshi.html</title>
+	
+    <meta name="keywords" content="keyword1,keyword2,keyword3">
+    <meta name="description" content="this is my page">
+    <meta name="content-type" content="text/html; charset=UTF-8">
+    
+    <!--<link rel="stylesheet" type="text/css" href="./styles.css">-->
+
+  </head>
+  
+  <body>
+  <script>
+   var player,bullet
+   var UpArrow=38,downarrow=40,rightarrow=39,leftarrow=37,shoot=83
+   var canvas,ctx,Keystate
+   var I=window.prompt("how many enemies do you want", null);
+   
+   player = {
+      x:485,
+      y:570,
+      width:30,
+      height:30,
+      dead:false,
+      
+      move: function() {
+      if(!this.dead){
+      if(this.y>0){
+           if(Keystate[UpArrow]) this.y-=2;
+           }
+      if(this.y<570){
+           if(Keystate[downarrow]) this.y+=2;
+           }
+      if(this.x<970){
+           if(Keystate[rightarrow]) this.x+=2;
+           }
+      if(this.x>0){
+           if(Keystate[leftarrow]) this.x-=2;
+           }
+           if(Keystate[shoot]){
+              this.fireshoot();
+              
+      }
+      }
+      },
+      draw: function() {
+         ctx.fillStyle="#8D1818";
+         ctx.fillRect(this.x, this.y, this.width, this.height);
+         
+      },
+      
+      fireshoot:function(){
+           if(!bullet.fire){
+               bullet.fire=true;
+               bullet.x=this.x+15;
+               bullet.y=this.y-5;
+           }
+           },
+      collision:function(){
+      for(var i=0;i<aies.length;i++){
+           if(Math.abs(this.x-aies[i].x)<30){
+            if(Math.abs(this.y-aies[i].y)<30){
+                  this.dead=true;
+                  this.x=-30;
+                  this.y=-30;
+                  aies[i].x=-30;
+                  aies[i].y=-30;
+                  aies[i].dead=true;
+             window.alert("you lost!");
+             window.location.reload(true);     
+                  
+                  
+            }
+           }
+           }
+      },
+
+   };
+      bullet = {
+
+      height:5,
+      width:5,
+      fire:false,
+      
+      
+      check:function(){
+
+           if(this.y<=-5){
+               this.fire=false;
+           }
+           },
+      collision:function(){
+           for(i=0;i<aies.length;i++){
+              if( this.x-aies[i].x>-5){
+              if(this.x-aies[i].x<30){
+              if(this.y-aies[i].y>-5){
+              if(this.y-aies[i].y<30){
+               this.fire=false;
+               aies[i].dead=true;
+               aies[i].x=-30;
+               aies[i].y=-30;
+               this.x=-5;
+               this.y=-5;
+               
+              
+               }
+               }
+               }
+               }
+           }
+      },
+      move: function() {
+          if(this.fire){
+               this.y-=4;
+          }
+
+      },
+      draw: function() {
+          ctx.fillStyle="blue";
+          ctx.fillRect(this.x, this.y, this.width, this.height);
+          
+      },
+
+   };
+
+   var aies=[];
+   function ai(){
+      this.x=Math.random()*580;
+      this.y=10;
+      this.bulletx=this.x;
+      this.bullety=this.y;
+      this.dead=false;
+      this.speedy=Math.random()*3.5;
+      this.speedx=Math.random()*3;
+      this.bulletsy=5;
+      this.bulletfire=true;
+      
+      this.move = function() {
+      if(!this.dead){
+             this.y+=this.speedy;
+             this.x+=this.speedx;
+             
+           if(this.y>570) this.speedy*=-1;
+           if(this.y<0)  this.speedy*=-1;
+           if(this.x>970) this.speedx*=-1;
+           if(this.x<0)  this.speedx*=-1;
+           }
+       
+      }
+      if(this.bulletfire==false){
+            this.bulletfire=true;
+      }
+      this.bullmove=function(){
+      if(!this.dead){
+       if(this.bulletfire){
+            this.bullety+=this.bulletsy;
+            }
+       }    
+      
+      }
+      this.check=function(){
+          if(this.bullety>600){
+              this.bulletfire=false;
+          }     
+      }
+      this.collision=function(){
+              
+              if( this.bulletx-player.x>-5){
+              if(this.bulletx-player.x<30){
+              if(this.bullety-player.y>-5){
+              if(this.bullety-player.y<30){
+               this.bulletfire=false;
+               player.dead=true;
+               player.x=-30;
+               player.y=-30;
+               this.bulletx=-5;
+               this.bullety=-5;
+             window.alert("you lost!");
+             window.location.reload(true);
+          
+         }
+        }
+       }
+      }
+      }
+      this.draw = function() {
+      
+         ctx.fillStyle="black";
+         ctx.fillRect(this.x, this.y, 30, 30);
+         ctx.fillStyle="red";
+         ctx.fillRect(this.bulletx,this.bullety,5,5);
+         
+         
+      
+      }
+
+  
+   }
+   
+   
+ 
+   function main(){
+      canvas=document.createElement("canvas");
+      canvas.height = 600;
+      canvas.width = 1000;
+      ctx=canvas.getContext("2d");
+      document.body.appendChild(canvas);
+      ctx.fillStyle="pink";
+      ctx.fillRect(0,0,1000,600);
+  
+      Keystate = {};
+      document.addEventListener("keydown",function(evt){
+          Keystate[evt.keyCode]=true;
+     
+      });
+      document.addEventListener("keyup",function(evt){
+           delete Keystate[evt.keyCode];
+      });
+      
+      
+
+     
+     for(i=0;i<I;i++){  
+     aies[i]=new ai();
+     
+     }
+
+   var loop = function(){
+      for(i=0;i<aies.length;i++){
+         aies[i].check();
+         aies[i].collision();
+         
+      }
+      
+      player.collision();
+      bullet.check();
+      bullet.collision();
+      draw();
+      move();
+      
+      
+       window.requestAnimationFrame(loop,canvas);
+     };
+      window.requestAnimationFrame(loop,canvas);
+    
+   };
+   
+   function move(){
+        player.move();
+        
+     for(i=0;i<aies.length;i++){  
+     aies[i].move();
+     aies[i].bullmove();
+     
+     }
+        bullet.move()
+   };
+   
+  
+   function draw(){
+   ctx.fillStyle="pink";
+   ctx.fillRect(0,0,1000,600);
+        player.draw();
+     for(i=0;i<aies.length;i++){  
+     aies[i].draw();
+     
+     }
+        bullet.draw();
+        ctx.save();
+        ctx.restore();
+   }
+   
+   
+   
+   main();
+   
+   
+   
+   
+   
+
+  </script>
+   
+  
+  </body>
+</html>
