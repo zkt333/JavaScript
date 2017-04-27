@@ -1,0 +1,33 @@
+function sum(){
+    var count = arguments[0];
+    var x = 0;
+    var subsum = function(){
+      for(var i=0;i<arguments.length;i++){
+        x += arguments[i];
+        count--;
+      }
+      if (count == 0){
+        return x;
+      }else{
+        return subsum;
+      }
+      }
+    return subsum;
+
+    
+    
+}
+console.log(sum(4)(10)(10)(10)(10));
+
+function sum1(a,b){
+   var sum = 0;
+   if (b == undefined){
+     sum = a;
+   }
+   else{
+     sum = a+b;
+     
+   }
+   return sum;
+}
+console.log(sum1(10));
