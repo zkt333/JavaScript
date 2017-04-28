@@ -19,15 +19,18 @@ function sum(){
 }
 console.log(sum(4)(10)(10)(10)(10));
 
-function sum1(a,b){
-   var sum = 0;
-   if (b == undefined){
-     sum = a;
-   }
-   else{
-     sum = a+b;
-     
-   }
-   return sum;
+function sum(a,b){
+  var x = a;
+  if (b!==undefined){
+    x = x+b;
+    return x;
+  }
+  else {
+    return function(arg){
+      return x+arg
+    }
+  }
+
+
 }
-console.log(sum1(10));
+console.log(sum(1)(2))
