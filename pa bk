@@ -1,0 +1,822 @@
+
+<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
+<%@ taglib uri="http://liferay.com/tld/aui" prefix="aui"%>
+<%@ taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet"%>
+<%@ taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme"%>
+<%@ taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui"%>
+<%@ taglib uri="http://liferay.com/tld/util" prefix="liferay-util"%>
+
+
+<%@page import="com.liferay.portal.model.User"%>
+<%@page import="com.liferay.portal.model.Organization"%>
+<%@page import="com.liferay.portal.theme.ThemeDisplay"%>
+<%@ page import="com.liferay.portal.kernel.util.WebKeys"%>
+
+<%@ page import="com.liferay.portal.kernel.language.LanguageUtil"%>
+<%@ page import="com.liferay.portal.kernel.util.ParamUtil"%>
+<%@ page import="com.liferay.portal.util.PortalUtil"%>
+<%@ page import="com.liferay.portal.kernel.language.LanguageWrapper"%>
+<%@ page import="com.liferay.portal.kernel.language.UnicodeLanguageUtil"%>
+<%@page import="com.liferay.portal.util.PortalUtil"%>
+<%@page import="javax.portlet.PortletURL"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<portlet:defineObjects />
+<%
+String namespace="portlet_paymentaccount_WAR_PayAccountMangementportlet";
+ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(WebKeys.THEME_DISPLAY);
+User user = themeDisplay.getUser();
+long userId=user.getUserId();
+
+String language = "en";
+HttpServletRequest r = PortalUtil.getHttpServletRequest(renderRequest);
+/* String langId=LanguageUtil.getLanguageId(request);
+String val =  PortalUtil.getOriginalServletRequest(r).getParameter("language");
+if(val !=null){
+	language =val;
+}else{
+boolean is_en_US=langId.equals("en_US");
+boolean is_zh_CN=langId.equals("zh_CN");
+
+if(is_zh_CN)
+	language="zh";
+} */
+String langId=LanguageUtil.getLanguageId(request);
+boolean is_en_US=langId.equals("en_US");
+boolean is_zh_CN=langId.equals("zh_CN");
+boolean is_ja_JP=langId.equals("ja_JP");
+
+%>
+<div class="<%=namespace%>">
+<div class="header">
+<div style="position:absolute;width:100%;height:100%;z-index:10;background:black;opacity:0.5;"></div>
+<div class="header-text">
+<p><liferay-ui:message key="myaccount"/></p>
+</div>
+</div>
+<div class="<%=namespace%>body">
+<div class="tab">
+  <ul class="tab ul">
+      <li id="defaultTab" class="tablinks" onclick="openAccount('<%=namespace%>Payment')">
+      		<liferay-ui:message key="transferFrom"/>
+      </li>
+	  <li class="tablinks" onclick="openAccount('<%=namespace%>Recipient')">
+		    <liferay-ui:message key="transferTo"/>
+	  </li>
+  </ul>
+</div>
+
+
+
+<div id="<%=namespace%>Payment" class="tabcontent">
+  <div id="tab head" class="">
+  	<div class="add-pic">
+  	    <img>
+  	</div>
+  	<div class="add-account">
+  	   <h3><liferay-ui:message key=""/></h3>
+  	   <button name="addAccout" class="addAccButton"><liferay-ui:message key="pay.addPaymentAccount"/></button>
+  	</div>
+  	<select class="<%=namespace%>typeselect" id="<%=namespace%>select1">
+  	    <option value="BA"><liferay-ui:message key="BankAccount"/></option>
+  	   <option value="DC"><liferay-ui:message key="DebitCard"/></option>
+  	   <option value="TP"><liferay-ui:message key="ThirdParty"/></option>
+  	</select>
+  </div>
+  
+  <div id="<%=namespace%>SEND" class="detail">
+  		<p id="failmsg" style="display:none"></p>
+  		
+        <table id="<%=namespace%>sendTable" class="display responsive nowrap" cellspacing="0" width="100%">
+		  <thead>
+		  <tr>
+	   	<th><liferay-ui:message key="accountName"/></th>
+	   	<th><liferay-ui:message key="accountId"/></th>
+	   	<th><liferay-ui:message key="currencyCd"/></th>
+	   	<th><liferay-ui:message key="balance"/></th>
+	   	<th><liferay-ui:message key="payMethodName"/></th>
+	   	<th><liferay-ui:message key="identity"/></th>
+	    <%-- <th><liferay-ui:message key="paymentType"/></th> --%>
+	   	<th></th>
+	   	</tr>
+		   </thead>
+   		</table>
+   		
+   		<div id="<%=namespace%>sendTabledialog" title="Basic dialog" style="display:none">
+       <div id="<%=namespace%>sendTabledetail"></div>  
+   		<!-- <div class="paging-1"></div> -->
+   </div>
+       <div id="<%=namespace%>sendconfirm" style="display:none"><p><liferay-ui:message key="Areyousuretodeletethisaccount"/></p></div>
+</div>
+</div>
+
+<div id="<%=namespace%>Recipient" class="tabcontent">
+  <div id="tab head" class="">
+  	<div class="add-pic">
+  	    <img>
+  	</div>
+  	<div class="add-account">
+  	   <h3><liferay-ui:message key=""/></h3>
+  	   <button name="addAccout" class="addAccButton"><liferay-ui:message key="addRecipient"/></button>
+  	</div>
+  	  	<select class="<%=namespace%>typeselect" id="<%=namespace%>select2">
+  	   <option value="BA"><liferay-ui:message key="BankAccount"/></option>
+  	   <option value="DC"><liferay-ui:message key="DebitCard"/></option>
+  	   <option value="TP"><liferay-ui:message key="ThirdParty"/></option>
+  	   </select>
+  </div>
+  <p id="failmsg" style="display:none"></p>
+  <div id="<%=namespace%>RECEIVE" class="detail">
+	 <table id="<%=namespace%>ReceiveTable"  class="display responsive nowrap" cellspacing="0" width="100%">
+	   	<thead>
+	   	<tr>
+	   	<th><liferay-ui:message key="accountName"/></th>
+	   	<th><liferay-ui:message key="accountId"/></th>
+	   	<th><liferay-ui:message key="currencyCd"/></th>
+	   	<th><liferay-ui:message key="balance"/></th>
+	   	<th><liferay-ui:message key="payMethodName"/></th>
+	   	<th><liferay-ui:message key="identity"/></th>
+	   	<th></th>
+	   	
+	   	</tr>
+    	</thead>
+	 </table>
+	  <div id="<%=namespace%>ReceiveTabledialog" title="Basic dialog" style="display:none">
+       <div id="<%=namespace%>ReceiveTabledetail"></div>  
+     <!-- <div class="paging-2"></div> -->
+  </div>
+    <div id="<%=namespace%>receiveconfirm" style="display:none"><p><liferay-ui:message key="Areyousuretodeletethisaccount"/></p></div>
+</div>
+
+<div style="display:none">
+  <p id="accountType"><liferay-ui:message key="accountTypeCd"/></p>
+  <p id="accountNumber"><liferay-ui:message key="account"/></p>
+  <p id="countryCd"><liferay-ui:message key="lm.task.country"/></p>
+  <p id="accountInfor"><liferay-ui:message key="lm.task.status"/></p>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+
+function openAccount(cityName) {
+    var i;
+    var tabcontent;
+    var tablinks;
+    tabcontent=document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(cityName).style.display = "block";   
+    this.className += " active";
+}
+
+document.getElementById('defaultTab').onclick();
+
+</script>
+	
+
+
+ <aui:script use="aui-base, node, event">
+
+var userIdValue=<%=userId%>;
+var language = "<%=language %>";
+
+var sendAccounts=[];
+var receiveAccounts=[];
+var accounts=[];
+var sendAccountsBA=[];
+var sendAccountsDC=[];
+var sendAccountsTP=[];
+var receiveAccountsBA=[];
+var receiveAccountsDC=[];
+var receiveAccountsTP=[];
+function getAccountInfor(account){
+	 var js_text ='{"accountName":"'+account.accountName+'","accountId": "'+account.accountId+'","currencyCd": "'+account.currencyCd+'","balance": "'+account.balance+'","payMethodName": "'+account.payMethodName+'","identity": "'+account.identity+'","accountTypeCd": "'+account.accountTypeCd+'","paymenttype": "'+account.paymentType+'","activeFlag": "'+account.activeFlag+'"}';
+	 return JSON.parse(js_text);
+}
+
+Liferay.Service(
+		'/LmAccountServices-portlet.account/get-account',
+		  {
+			  userId: userIdValue,
+			  localeCd:language
+		  },
+		  function(obj) {
+			  
+			  //console.log(userIdValue);
+		    console.log(obj);
+		    
+	        if (obj.status.code != "9999"){
+	        	document.getElementById("failmsg").innerHTML="You don't have any payment accounts";
+	        	document.getElementById("failmsg").style.display="show";
+	        	//console.log('empty');
+	        } else {
+	        	//console.log('not empty');
+	        	var accounts=obj.value;
+	        	console.log(accounts);
+	            for (var i=0; i<accounts.length;i++){
+	            	  if (accounts[i].accountTypeCd == "SEND" && accounts[i].paymentType=="BankAccount" && accounts[i].activeFlag=="Y"){
+	            		   var accountJson1 = getAccountInfor(accounts[i]);
+	            		   sendAccountsBA.push(accountJson1);
+	            	 } else if (accounts[i].accountTypeCd=="SEND" && accounts[i].paymentType=="DebitCard" && accounts[i].activeFlag=="Y"){
+	            		   var accountJson2 = getAccountInfor(accounts[i]);
+	            		   sendAccountsDC.push(accountJson2);
+	            	 } else if (accounts[i].accountTypeCd=="SEND" && accounts[i].paymentType=="ThirdParty" && accounts[i].activeFlag=="Y"){
+	            		   var accountJson3 = getAccountInfor(accounts[i]);
+	            		   sendAccountsTP.push(accountJson3);
+	            	 } else if (accounts[i].accountTypeCd=="RECEIVE" && accounts[i].paymentType=="BankAccount" && accounts[i].activeFlag=="Y"){
+	            		   var accountJson4 = getAccountInfor(accounts[i]);
+	            		   receiveAccountsBA.push(accountJson4);
+	            	 } else if (accounts[i].accountTypeCd=="RECEIVE" && accounts[i].paymentType=="DebitCard" && accounts[i].activeFlag=="Y"){
+	            		   var accountJson5 = getAccountInfor(accounts[i]);
+	            		   receiveAccountsDC.push(accountJson5);
+	            	 } else if (accounts[i].accountTypeCd=="RECEIVE" && accounts[i].paymentType=="ThirdParty" && accounts[i].activeFlag=="Y"){
+	            		   var accountJson6 = getAccountInfor(accounts[i]);
+	            		   receiveAccountsTP.push(accountJson6);
+	            	 } 
+	            	 else if (accounts[i].accountTypeCd=="RECEIVE"){
+	            		   var accountJson7 = getAccountInfor(accounts[i]);
+	            		   receiveAccounts.push(accountJson7);
+	            	 }
+	            	 else if (accounts[i].accountTypeCd=="SEND"){
+	            		   var accountJson8 = getAccountInfor(accounts[i]);
+	            		   sendAccounts.push(accountJson8);
+	            	 } 
+	            }
+	           console.log(sendAccountsBA);
+	           console.log(sendAccountsDC);
+	           console.log(sendAccountsTP);
+	           console.log(receiveAccountsBA);
+	           console.log(receiveAccountsDC);
+	           console.log(receiveAccountsTP); 
+	   /*         console.log(receiveAccounts);
+	           console.log(sendAccounts); */
+	        }
+	
+	        
+	        var senddata =[];
+	        var receivedata=[];
+	        var sendBA = [];
+	        var sendDC = [];
+	        var sendTP = [];
+	        var receiveBA = [];
+	        var receiveDC = [];
+	        var receiveTP = [];
+	        /* for(var i=0;i<sendAccounts.length;i++){
+	        	 var arr1 = Object.keys(sendAccounts[i]).map(function (key) { return sendAccounts[i][key]; });
+	        	 console.log('yes');
+	        	 senddata.push(arr1);
+	         }
+	        for(var i=0;i<receiveAccounts.length;i++){
+	        	 var arr1 = Object.keys(sendAccounts[i]).map(function (key) { return sendAccounts[i][key]; });
+	        	 receivedata.push(arr1);
+	         }  */
+	       
+	         if(sendAccountsBA.length!=0){
+	        	 
+	         for(var i=0;i<sendAccountsBA.length;i++){
+	        	 var arr1 = Object.keys(sendAccountsBA[i]).map(function (key) { return sendAccountsBA[i][key]; });
+	        	 //console.log('yes');
+	        	 sendBA.push(arr1);
+	         }}
+	         if(sendAccountsDC.length!=0){
+	        	 //console.log('true');
+	         for(var i=0;i<sendAccountsDC.length;i++){
+	        	 var arr2 = Object.keys(sendAccountsDC[i]).map(function (key) { return sendAccountsDC[i][key]; });
+	        	 sendDC.push(arr2);
+	         }}
+	         if(sendAccountsTP.length!=0){
+	        	 //console.log('true');
+	         for(var i=0;i<sendAccountsTP.length;i++){
+	        	 var arr3 = Object.keys(sendAccountsTP[i]).map(function (key) { return sendAccountsTP[i][key]; });
+	        	 sendTP.push(arr3);
+	         }}
+	         if(receiveAccountsBA.length!=0){
+	        	 //console.log('true');
+	         for(var i=0;i<receiveAccountsBA.length;i++){
+	        	 var arr4 = Object.keys(receiveAccountsBA[i]).map(function (key) { return receiveAccountsBA[i][key]; });
+	        	 receiveBA.push(arr4);
+	         }}
+	         if(receiveAccountsDC.length!=0){
+	        	 //console.log('true');
+	         for(var i=0;i<receiveAccountsDC.length;i++){
+	        	 var arr5 = Object.keys(receiveAccountsDC[i]).map(function (key) { return receiveAccountsDC[i][key]; });
+	        	 receiveDC.push(arr5);
+	         }}
+	         if(receiveAccountsTP.length!=0){
+	        	 //console.log('true');
+	         for(var i=0;i<receiveAccountsTP.length;i++){
+	        	 var arr6 = Object.keys(receiveAccountsTP[i]).map(function (key) { return receiveAccountsTP[i][key]; });
+	        	 receiveTP.push(arr6);
+	         }}
+	         /* console.log('sba'+sendBA); 
+	         console.log('sdc'+sendDC);
+	         console.log('stp'+sendTP);
+		     console.log('rba'+receiveBA);
+		     console.log('rdc'+receiveDC);
+		     console.log('rtp'+receiveTP); */
+		     generatereceiveTable(receiveBA);
+		     generatesendTable(sendBA);
+		        document.getElementById("<%=namespace%>select2").addEventListener("click", function(){
+		        	var val = $('#<%=namespace%>select2').val();
+		        	
+		        	if(val=="BA"){
+		        		console.log(receiveBA);
+		        		generatereceiveTable(receiveBA);
+		        	};
+		        	if(val=="DC"){
+		        		console.log(receiveDC);
+		        		generatereceiveTable(receiveDC);
+		        	};
+		        	if(val=="TP"){
+		        		console.log(receiveTP);
+		        		generatereceiveTable(receiveTP);
+		        	}
+		        });
+		        document.getElementById("<%=namespace%>select1").addEventListener("click", function(){
+		        	var val = $('#<%=namespace%>select1').val();
+		    
+		        	console.log(val);
+		        	if(val=="BA"){
+		        		//console.log(sendBA);
+		        		generatesendTable(sendBA);
+		        	};
+		        	if(val=="DC"){
+		        		//console.log(sendDC);
+		        		generatesendTable(sendDC);
+		        	};
+		        	if(val=="TP"){
+		        		//console.log(sendTP);
+		        		generatesendTable(sendTP);
+		        	}
+		        });
+		    //console.log($('#<%=namespace%>select2').val());
+		    function generatesendTable(dataSet){
+		      	if ( $.fn.DataTable.isDataTable('#<%=namespace%>sendTable') ) {
+		    		  $('#<%=namespace%>sendTable').DataTable().destroy();
+		    		  
+				    	//console.log(dataSet);
+		    		}
+		      	
+		    	if(<%=is_en_US%>){
+		    	var table = $('#<%=namespace%>sendTable').DataTable({
+		    	   
+		      //  destory:true,
+		       responsive:true, 
+		       "bSort": false,
+		   
+		      "data":dataSet,
+		      "columnDefs": [ {
+	                "targets": -1,
+	                "data": null,
+	                "defaultContent": "<button class='deactive'>"+'<liferay-ui:message key="View"/>'+"</button>"
+	                //"defaultContent": "<div><a href='#' class='view'>"+'<liferay-ui:message key="myProfile.cashflow.details"/>'+"</a></div>"
+	              }
+	                  ,{
+	                    "targets": [6],
+	                    "visible": true,
+	                    "searchable": false
+	                }     
+	               ]
+		    	})
+		    	}
+		    	if(<%=is_zh_CN%>){
+		    		var table = $('#<%=namespace%>sendTable').DataTable({
+		    		/*     paging: false,
+		    		    retrieve: true,
+		 		       destory:true,
+		 		       responsive:false, */
+		 		      responsive:true,
+		 		     "bSort": false,
+		 		      "data":dataSet,
+		 		     "oLanguage" : {
+		                 "sLengthMenu": "每页显示 _MENU_ 条记录",
+		                 "sZeroRecords": "抱歉， 没有找到",
+		                 "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
+		                 "sInfoEmpty": "没有数据",
+		                 "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
+		                 "sZeroRecords": "没有检索到数据",
+		                  "sSearch": "名称:",
+		                 "oPaginate": {
+		                 "sFirst": "首页",
+		                 "sPrevious": "前一页",
+		                 "sNext": "后一页",
+		                 "sLast": "尾页"
+		                 }
+		                 },
+		 		      "columnDefs": [ {
+		 	                "targets": -1,
+		 	                "data": null,
+		 	                "defaultContent": "<button class='deactive'>"+'<liferay-ui:message key="View"/>'+"</button>"
+		 	                //"defaultContent": "<div><a href='#' class='view'>"+'<liferay-ui:message key="deactive"/>'+"</a></div>"
+		 	              }
+		 	                   ,{
+		 	                    "targets": [6],
+		 	                    "visible": true,
+		 	                    "searchable": false
+		 	                }     
+		 	               ]
+		 		    	})
+		    	}
+		    	if(<%=is_ja_JP%>){
+		    		var table = $('#<%=namespace%>sendTable').DataTable({
+		    		    /* paging: false,
+		    		    retrieve: true,
+			 		       destory:true,
+			 		       responsive:false, */
+			 		      responsive:true,
+			 		     "bSort": false,
+			 		      "data":dataSet,
+			 		     "oLanguage" : {
+			 		    	"sLengthMenu": "各ページ _MENU_ 個記録",
+		                     "sZeroRecords": "すみません、見つかりません。",
+		                     "sInfo": " _START_ から _END_ まで総計 _TOTAL_ 個記録",
+		                     "sInfoEmpty": "記録はありません",
+		                     "sInfoFiltered": "( _MAX_ 個記録から捜索)",
+		                     "sZeroRecords": "記録が見つかりません",
+		                      "sSearch": "名称：",
+		                     "oPaginate": {
+		                     "sFirst": "先頭ページ",
+		                     "sPrevious": "前のページ",
+		                     "sNext": "次のページ",
+		                     "sLast": "最終ページ"
+			                 }
+			                 },
+			 		      "columnDefs": [ {
+			 	                "targets": -1,
+			 	                "data": null,
+			 	                "defaultContent": "<button class='deactive'>"+'<liferay-ui:message key="View"/>'+"</button>"
+			 	                //"defaultContent": "<div><a href='#' class='view'>"+'<liferay-ui:message key="myProfile.cashflow.details"/>'+"</a></div>"
+			 	              }
+			 	                   ,{
+			 	                    "targets": [6],
+			 	                    "visible": true,
+			 	                    "searchable": false
+			 	                }      
+			 	               ]
+			 		    	})
+		    		
+		    	}
+		    	$('#<%=namespace%>sendTable tbody').off( 'click.rowClick' ).on( 'click.rowClick', '.deactive', function () 
+		    			{ 
+		    		       
+		    			    var tr = $(this).closest("tr");
+		    			   console.log(dataSet);
+		    			    var rowindex = tr.index();
+		    			    var accountid = dataSet[rowindex][1];
+		    			    var accountname = dataSet[rowindex][0];
+		    			    //console.log(table.row(this).data());
+                            console.log(rowindex);
+                            console.log(dataSet[rowindex]);
+                            console.log(dataSet[rowindex][8]);
+                            if($(window).width()>600){
+                          	  var screenWidth = '500px';
+                            }else{
+                          	  var screenWidth = $(window).width()-30+'px';
+                            }
+                            $('#<%=namespace%>sendTabledialog').dialog({
+	    		    	        title: '<liferay-ui:message key="details"/>',
+	    		     	        modal: true,
+	    		     	        width: screenWidth,
+	    		     	        height:'auto',
+	    		     	        resizable:false,
+	    		     	        position: { my: "center", at: "center", of: window },
+	    		     	       open: function(){
+		    		     	    	  $('#<%=namespace%>sendTabledetail').html('<div class="sendtable"><table>\
+		    	         	                   <tr><td>'+'<liferay-ui:message key="accountName"/>'+':</td><td>'+dataSet[rowindex][0]+'</td></tr>\
+		    	         	                   <tr><td>'+'<liferay-ui:message key="accountId"/>'+':</td><td>'+dataSet[rowindex][1]+'</td></tr>\
+		    	         	                   <tr><td>'+'<liferay-ui:message key="currencyCd"/>'+':</td><td>'+dataSet[rowindex][2]+'</td></tr>\
+		    	         	                   <tr><td>'+'<liferay-ui:message key="balance"/>'+':</td><td>'+dataSet[rowindex][3]+'</td></tr>\
+		    	         	                   <tr><td>'+'<liferay-ui:message key="payMethodName"/>'+':</td><td>'+dataSet[rowindex][4]+'</td></tr>\
+		    	         	                   <tr><td>'+'<liferay-ui:message key="identity"/>'+':</td><td>'+dataSet[rowindex][5]+'</td></tr>\
+		    	         	                   </table></div>')
+		    		     	       },
+	    		     	       buttons: [
+	    		     	              
+	    		          			    {   id:'delete',
+	    		          			        text: '<liferay-ui:message key="Deletethisaccount"/>',
+	    		          			        //open: function() { $(this).addClass('b') }, //will append a class called 'b' to the created 'OK' button.
+	    		          			        click: function() { 
+	    		          			        	if(dataSet[rowindex][8]!="Y"){
+	    		          			        		window.alert('You can not deactive your account, because your account has been frozen!');
+	    		          			        	}
+	    		          			        	else{
+	    		          			        		$('#<%=namespace%>sendTabledialog').dialog('close');
+	    		          			        		$('#<%=namespace%>sendconfirm').dialog({
+	    		          			        			title:'<liferay-ui:message key="delete"/>',
+	    		          			        			modal: true,
+	    		          			        			buttons:[
+	    		          			        			         {
+	    		          			        			        	 text:'<liferay-ui:message key="confirm"/>',
+	    		          			        			        	 click:function(){
+	    		          			        			        	     	    		          		
+	    					    		                                     	Liferay.Service(
+	    					    		                                    			'/LmAccountServices-portlet.account/update-account-and-holder',
+	    					    		                                    			  {
+	    					    		                                    				accountId: accountid,
+	    					    		                                    			    accountName: accountname,
+	    					    		                                    			    accountDetailObject: '',
+	    					    		                                    			    activeFlag: 'N',
+	    					    		                                    			    fullName: '',
+	    					    		                                    			    firstName: '',
+	    					    		                                    			    lastName: '',
+	    					    		                                    			    middleName: '',
+	    					    		                                    			    email: '',
+	    					    		                                    			    addressLine1: '',
+	    					    		                                    			    addressLine2: '',
+	    					    		                                    			    addressLine3: '',
+	    					    		                                    			    city: '',
+	    					    		                                    			    state: '',
+	    					    		                                    			    zipCode: '',
+	    					    		                                    			    countryCd: '',
+	    					    		                                    			    phone: '',
+	    					    		                                    			    identityNum: '',
+	    					    		                                    			    localeCd: ''
+	    					    		                                    			  },function(response){
+	    					    		                                    				  dataSet[rowindex][8] = "N";
+	    					    		                                    				  console.log(response);
+	    					    		                                    				  //window.alert('successed!');
+	    					    		                                    				  
+	    					    		                                    			  })
+	    					    		                                    
+	    					    		          			        	
+	    		          			        			        	   dataSet.splice(rowindex, 1);
+	    					    		          			        	generatesendTable(dataSet);
+	    		          			        			        		$('#<%=namespace%>sendconfirm').dialog('close');
+	    		          			        			        	 }
+	    		          			        			         },
+	    		          			        			         {
+	    		          			        			        	 text:'<liferay-ui:message key="Cancel"/>',
+	    		          			        			        	 click:function(){
+	    		          			        			        		$('#<%=namespace%>sendconfirm').dialog('close');
+	    		          			        			        	 }
+	    		          			        			         }
+	    		          			        			         
+	    		          			        			         ]
+	    		          			        		
+	    		          			        			
+	    		          			        		})
+	    		   			    			     $(".ui-dialog-titlebar").css("background-color", "#61cc61");
+	    		   	    		        	     $(".ui-dialog-title").css("color", "white");
+	    		   	    		        	     $(".ui-dialog").css("position", "center");
+	    		          			        	}
+	    		          			        }
+	    		          			    },
+	    		          			  {
+	    		     	                	 text:'<liferay-ui:message key="Cancel"/>',
+	    		     	                	 click:function(){
+	    		     	                		$('#<%=namespace%>sendTabledialog').dialog('close');
+	    		     	                	 }
+	    		     	                 },
+	    		          			  ]
+	    			    	 
+	    			    	 
+	    			     });
+                   	     $(".ui-dialog-titlebar").css("background-color", "#61cc61");
+		        	     $(".ui-dialog-title").css("color", "white");
+		        	     $(".ui-dialog").css("position", "center");
+		    			   
+		    			});
+		    };
+		    function generatereceiveTable(dataSet){
+		    	if ( $.fn.DataTable.isDataTable('#<%=namespace%>ReceiveTable') ) {
+		    		  $('#<%=namespace%>ReceiveTable').DataTable().destroy();
+		    		
+		    		}
+		    	
+		    	console.log(dataSet);
+		    	if(<%=is_en_US%>){
+			    	var table = $('#<%=namespace%>ReceiveTable').DataTable({
+			   /*  	    paging: false,
+			    	    retrieve: true,
+			       destory:true,
+			       responsive:false, */
+			       responsive:true,
+			       "bSort": false,
+			      "data":dataSet,
+			      "columnDefs": [ {
+		                "targets": -1,
+		                "data": null,
+		                "defaultContent": "<button class='deactive'>"+'<liferay-ui:message key="View"/>'+"</button>"
+		                //"defaultContent": "<div><a href='#' class='view'>"+'<liferay-ui:message key="myProfile.cashflow.details"/>'+"</a></div>"
+		              }
+		                  ,{
+		                    "targets": [6],
+		                    "visible": true,
+		                    "searchable": false
+		                }    
+		               ]
+			    	})}
+			    	if(<%=is_zh_CN%>){
+			    		var table = $('#<%=namespace%>ReceiveTable').DataTable({
+			    		/*     paging: false,
+			    		    retrieve: true,
+			 		       destory:true,
+			 		       responsive:false, */
+			 		      responsive:true,
+			 		     "bSort": false,
+			 		      "data":dataSet,
+			 		     "oLanguage" : {
+			                 "sLengthMenu": "每页显示 _MENU_ 条记录",
+			                 "sZeroRecords": "抱歉， 没有找到",
+			                 "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
+			                 "sInfoEmpty": "没有数据",
+			                 "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
+			                 "sZeroRecords": "没有检索到数据",
+			                  "sSearch": "名称:",
+			                 "oPaginate": {
+			                 "sFirst": "首页",
+			                 "sPrevious": "前一页",
+			                 "sNext": "后一页",
+			                 "sLast": "尾页"
+			                 }
+			                 },
+			 		      "columnDefs": [ {
+			 	                "targets": -1,
+			 	                "data": null,
+			 	                "defaultContent": "<button class='deactive'>"+'<liferay-ui:message key="View"/>'+"</button>"
+			 	                //"defaultContent": "<div><a href='#' class='view'>"+'<liferay-ui:message key="myProfile.cashflow.details"/>'+"</a></div>"
+			 	              }
+			 	                  ,{
+			 	                    "targets": [6],
+			 	                    "visible": true,
+			 	                    "searchable": false
+			 	                }    
+			 	               ]
+			 		    	})
+			    	}
+			    	if(<%=is_ja_JP%>){
+			    		var table = $('#<%=namespace%>ReceiveTable').DataTable({
+			    		 /*    paging: false,
+			    		    retrieve: true,
+				 		       destory:true,
+				 		       responsive:false, */
+				 		      responsive:true,
+				 		     "bSort": false,
+				 		      "data":dataSet,
+				 		     "oLanguage" : {
+				 		    	"sLengthMenu": "各ページ _MENU_ 個記録",
+			                     "sZeroRecords": "すみません、見つかりません。",
+			                     "sInfo": " _START_ から _END_ まで総計 _TOTAL_ 個記録",
+			                     "sInfoEmpty": "記録はありません",
+			                     "sInfoFiltered": "( _MAX_ 個記録から捜索)",
+			                     "sZeroRecords": "記録が見つかりません",
+			                      "sSearch": "名称：",
+			                     "oPaginate": {
+			                     "sFirst": "先頭ページ",
+			                     "sPrevious": "前のページ",
+			                     "sNext": "次のページ",
+			                     "sLast": "最終ページ"
+				                 }
+				                 },
+				 		      "columnDefs": [ {
+				 	                "targets": -1,
+				 	                "data": null,
+				 	                "defaultContent": "<button class='deactive'>"+'<liferay-ui:message key="View"/>'+"</button>"
+				 	                //"defaultContent": "<div><a href='#' class='view'>"+'<liferay-ui:message key="myProfile.cashflow.details"/>'+"</a></div>"
+				 	              }
+				 	                  ,{
+				 	                    "targets": [6],
+				 	                    "visible": true,
+				 	                    "searchable": false
+				 	                }     
+				 	               ]
+				 		    	})
+			    		
+			    	}
+			    	$('#<%=namespace%>ReceiveTable tbody').off( 'click.rowClick' ).on( 'click.rowClick', '.deactive', function () 
+			    			{
+			    			    var tr = $(this).closest("tr");
+			    			    //console.log( table.row( this ).data() );
+			    			    console.log(dataSet);
+			    			    var rowindex = tr.index();
+			    			    console.log(rowindex);
+			    			     var activeflag = dataSet[rowindex][8];
+			    			     var accountid = dataSet[rowindex][1];
+			    			     var accountname = dataSet[rowindex][0];
+			    			     var Deletethisaccount = '<liferay-ui:message key="Deletethisaccount"/>';
+			    			     if($(window).width()>600){
+			    	            	  var screenWidth = '500px';
+			    	              }else{
+			    	            	  var screenWidth = $(window).width()-30+'px';
+			    	              }
+			    			     $('#<%=namespace%>ReceiveTabledialog').dialog({
+			    		    	        title: '<liferay-ui:message key="details"/>',
+			    		     	        modal: true,
+			    		     	        width: screenWidth,
+			    		     	        height:'auto',
+			    		     	        resizable:false,
+			    		     	        position: { my: "center", at: "center", of: window },
+			    		     	       open: function(){
+			    		     	    	  $('#<%=namespace%>ReceiveTabledetail').html('<div class="ReceiveTable"><table>\
+			    		     	    			 <tr><td>'+'<liferay-ui:message key="accountName"/>'+':</td><td>'+dataSet[rowindex][0]+'</td></tr>\
+			    	         	                   <tr><td>'+'<liferay-ui:message key="accountId"/>'+':</td><td>'+dataSet[rowindex][1]+'</td></tr>\
+			    	         	                   <tr><td>'+'<liferay-ui:message key="currencyCd"/>'+':</td><td>'+dataSet[rowindex][2]+'</td></tr>\
+			    	         	                   <tr><td>'+'<liferay-ui:message key="balance"/>'+':</td><td>'+dataSet[rowindex][3]+'</td></tr>\
+			    	         	                   <tr><td>'+'<liferay-ui:message key="payMethodName"/>'+':</td><td>'+dataSet[rowindex][4]+'</td></tr>\
+			    	         	                   <tr><td>'+'<liferay-ui:message key="identity"/>'+':</td><td>'+dataSet[rowindex][5]+'</td></tr>\
+			    	         	                   </table></div>')
+			    		     	       },
+			    		     	      buttons: [
+ 			    		          			    {
+			    		          			        text: Deletethisaccount,
+			    		          			        //open: function() { $(this).addClass('b') }, //will append a class called 'b' to the created 'OK' button.
+			    		          			        click: function() { 
+			    		          			        	if(dataSet[rowindex][8]!="Y"){
+			    		          			        		window.alert('You can not deactive your account, because your account has been frozen!');
+			    		          			        	}
+			    		          			        	else{
+			    		          			        		$('#<%=namespace%>ReceiveTabledialog').dialog('close');
+			    		          			        		$('#<%=namespace%>receiveconfirm').dialog({
+			    		          			        			title:'<liferay-ui:message key="delete"/>',
+			    		          			        			modal: true,
+			    		          			        			buttons:[
+			    		          			        			         {
+			    		          			        			        	 text:'<liferay-ui:message key="confirm"/>',
+			    		          			        			        	 click:function(){			    		          			        			        	    	    		          		
+			    					    		                                     	Liferay.Service(
+			    					    		                                    			'/LmAccountServices-portlet.account/update-account-and-holder',
+			    					    		                                    			  {
+			    					    		                                    				accountId: accountid,
+			    					    		                                    			    accountName: accountname,
+			    					    		                                    			    accountDetailObject: '',
+			    					    		                                    			    activeFlag: 'N',
+			    					    		                                    			    fullName: '',
+			    					    		                                    			    firstName: '',
+			    					    		                                    			    lastName: '',
+			    					    		                                    			    middleName: '',
+			    					    		                                    			    email: '',
+			    					    		                                    			    addressLine1: '',
+			    					    		                                    			    addressLine2: '',
+			    					    		                                    			    addressLine3: '',
+			    					    		                                    			    city: '',
+			    					    		                                    			    state: '',
+			    					    		                                    			    zipCode: '',
+			    					    		                                    			    countryCd: '',
+			    					    		                                    			    phone: '',
+			    					    		                                    			    identityNum: '',
+			    					    		                                    			    localeCd: ''
+			    					    		                                    			  },function(response){
+			    					    		                                    				  dataSet[rowindex][8] = "N";
+			    					    		                                    				  console.log(response);
+			    					    		                                    				  //window.alert('successed!');
+			    					    		                                    				  
+			    					    		                                    			  })
+			    					    		                                    
+			    					    		          			        	
+			    		          			        			        	   dataSet.splice(rowindex, 1);
+			    					    		          			        	generatereceiveTable(dataSet);
+			    		          			        			        		$('#<%=namespace%>receiveconfirm').dialog('close');
+			    		          			        			        	 }
+			    		          			        			         },
+			    		          			        			         {
+			    		          			        			        	 text:'<liferay-ui:message key="Cancel"/>',
+			    		          			        			        	 click:function(){
+			    		          			        			        		$('#<%=namespace%>receiveconfirm').dialog('close');
+			    		          			        			        	 }
+			    		          			        			         }
+			    		          			        			         
+			    		          			        			         ]
+			    		          			        		
+			    		          			        			
+			    		          			        		})
+			    		   			    			     $(".ui-dialog-titlebar").css("background-color", "#61cc61");
+			    		   	    		        	     $(".ui-dialog-title").css("color", "white");
+			    		   	    		        	     $(".ui-dialog").css("position", "center");
+			    		          			        	}
+			    		          			        }
+			    		          			    }, 
+			    		          			  {
+			    		     	                	 text:'<liferay-ui:message key="Cancel"/>',
+			    		     	                	 click:function(){
+			    		     	                		$('#<%=namespace%>ReceiveTabledialog').dialog('close');
+			    		     	                	 }
+			    		     	                 },
+
+			    		          			  ]
+			    		      	  
+			    			    	 
+			    			     }); 			    			   
+			    			     $(".ui-dialog-titlebar").css("background-color", "#61cc61");
+	    		        	     $(".ui-dialog-title").css("color", "white");
+	    		        	     $(".ui-dialog").css("position", "center");
+			    			});
+		   };
+		   
+	    	
+
+		  }
+);
+
+
+	
+
+
+</aui:script> 
+     
