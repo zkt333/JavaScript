@@ -1,4 +1,3 @@
-
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui"%>
 <%@ taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet"%>
@@ -83,7 +82,7 @@ boolean is_ja_JP=langId.equals("ja_JP");
   	   <option value="TP"><liferay-ui:message key="ThirdParty"/></option>
   	</select>
   </div>
-  
+  <div class="noneressend" style="display: none;"> <div class="no-icon"> </div> <div class="no-res"> <p><liferay-ui:message key="myProfile.noresult"/></p> </div> </div>
   <div id="<%=namespace%>SEND" class="detail">
   		<p id="failmsg" style="display:none"></p>
   		
@@ -125,7 +124,7 @@ boolean is_ja_JP=langId.equals("ja_JP");
   	   <option value="TP"><liferay-ui:message key="ThirdParty"/></option>
   	   </select>
   </div>
-  <p id="failmsg" style="display:none"></p>
+  <div class="noneresreceive" style="display: none;"> <div class="no-icon"> </div> <div class="no-res"> <p><liferay-ui:message key="myProfile.noresult"/></p> </div> </div>
   <div id="<%=namespace%>RECEIVE" class="detail">
 	 <table id="<%=namespace%>ReceiveTable"  class="display responsive nowrap" cellspacing="0" width="100%">
 	   	<thead>
@@ -358,6 +357,14 @@ Liferay.Service(
 		        });
 		    //console.log($('#<%=namespace%>select2').val());
 		    function generatesendTable(dataSet){
+		    	if(dataSet.length==0){
+		    		
+			    		$(".noneressend").css("display","block");
+			    		$("#<%=namespace%>SEND").css("display","none");
+			    
+		    	}else{
+		    		$(".noneressend").css("display","none");
+		    		$("#<%=namespace%>SEND").css("display","block");
 		      	if ( $.fn.DataTable.isDataTable('#<%=namespace%>sendTable') ) {
 		    		  $('#<%=namespace%>sendTable').DataTable().destroy();
 		    		  
@@ -583,8 +590,17 @@ Liferay.Service(
 		        	     $(".ui-dialog").css("position", "center");
 		    			   
 		    			});
+		    }
 		    };
 		    function generatereceiveTable(dataSet){
+		    	if(dataSet.length==0){
+		    		$(".noneresreceive").css("display","block");
+		    		$("#<%=namespace%>RECEIVE").css("display","none");
+		    	}else{
+		    		
+			    		$(".noneresreceive").css("display","none");
+			    		$("#<%=namespace%>RECEIVE").css("display","block");
+			    	
 		    	if ( $.fn.DataTable.isDataTable('#<%=namespace%>ReceiveTable') ) {
 		    		  $('#<%=namespace%>ReceiveTable').DataTable().destroy();
 		    		
@@ -807,6 +823,7 @@ Liferay.Service(
 	    		        	     $(".ui-dialog-title").css("color", "white");
 	    		        	     $(".ui-dialog").css("position", "center");
 			    			});
+		    }
 		   };
 		   
 	    	
@@ -820,3 +837,4 @@ Liferay.Service(
 
 </aui:script> 
      
+
