@@ -1,0 +1,433 @@
+
+ <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
+ <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui"%>
+ <%@ taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet"%>
+ <%@ taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme"%>
+ <%@ taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui"%>
+ <%@ taglib uri="http://liferay.com/tld/util" prefix="liferay-util"%>
+ <portlet:defineObjects />
+ <%@page import="java.io.Serializable"%>
+ <%@page import="javax.portlet.PortletSession"%>
+ <%@page import="com.liferay.portal.model.User"%>
+ <%@page import="com.liferay.portal.model.Organization"%>
+ <%@page import="com.liferay.portal.theme.ThemeDisplay"%>
+ <%@ page language="java" contentType="text/html; charset=UTF-8"
+     pageEncoding="UTF-8"%>
+ <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
+ <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui"%>
+ <%@ page import="java.util.*"%>
+ <%@ page import="javax.portlet.PortletPreferences"%>
+ <%@ page import="java.text.DateFormat"%>
+ <%@ page import="java.text.SimpleDateFormat"%>
+ <%@ page
+     import="com.liferay.portlet.expando.service.ExpandoValueServiceUtil"%>
+ <%@ page
+     import="com.liferay.portal.service.OrganizationLocalServiceUtil"%>
+ <%@ page import="com.liferay.portal.kernel.util.WebKeys"%>
+ <%@ taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui"%>
+ <%@ page import="com.liferay.portal.kernel.language.LanguageUtil"%>
+ <%@ page import="com.liferay.portal.kernel.util.ParamUtil"%>
+ <%@ page import="com.liferay.portal.util.PortalUtil"%>
+ <%@ page import="com.liferay.portal.kernel.language.LanguageWrapper"%>
+ <%@ page import="com.liferay.portal.kernel.language.UnicodeLanguageUtil"%>
+ <%@page import="com.liferay.portal.util.PortalUtil"%>
+ <%@page import="javax.portlet.PortletURL"%>
+ <%@page import="com.liferay.portal.kernel.portlet.LiferayWindowState"%>
+ <portlet:defineObjects />
+ <%
+ String namespace="quickprofile";
+ ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(WebKeys.THEME_DISPLAY);
+ User user = themeDisplay.getUser();
+ long userId=user.getUserId();
+
+ HttpServletRequest r = PortalUtil.getHttpServletRequest(renderRequest);
+ /* String langId=LanguageUtil.getLanguageId(request);
+ String val =  PortalUtil.getOriginalServletRequest(r).getParameter("language");
+ if(val !=null){
+ 	language =val;
+ }else{
+ boolean is_en_US=langId.equals("en_US");
+ boolean is_zh_CN=langId.equals("zh_CN");
+
+ if(is_zh_CN)
+ 	language="zh";
+ } */
+ String langId=LanguageUtil.getLanguageId(request);
+ boolean is_en_US=langId.equals("en_US");
+ boolean is_zh_CN=langId.equals("zh_CN");
+ boolean is_ja_JP=langId.equals("ja_JP");
+
+ %>
+ <button id="<%=namespace%>click" style="margin-top:200px">clickme!!!</button>
+
+   
+
+
+<div id="<%=namespace%>profile" style="display:none">
+     <div id="submitloading" style="display:none;width: 100%;height: 200px;background-color: white;background-image: url(&quot;/html/themes/classic/images/miniloading.gif&quot;);background-repeat: no-repeat;background-position: center center;"></div>
+     <div id="<%=namespace%>detail">
+     <div><table>
+	        		       <tr><td><p><liferay-ui:message key="birthday"/><span style="color:red;margin:5px;">*</span></p></td><td><input type="text" id="<%=namespace%>birthday" onkeydown='return (event.which >= 48 && event.which <= 57) 
+   || event.which == 8' placeholder="<liferay-ui:message key="mmddyyyy"/>"></td></tr>
+	        		       <tr><td></td><td><p id="<%=namespace%>wrong" style="display:none;color:red"><liferay-ui:message key="wrongformat"/></p></td></tr>
+	        		       <tr><td><p><liferay-ui:message key="photo"/><span style="color:red;margin:5px;">*</span></p></td><td><input type="file" onchange="previewFile()"></td></tr>
+	        		       <tr><td></td><td><a id="takephoto"><liferay-ui:message key="howtotakephoto"/></a><a id="takeexample"><liferay-ui:message key="photoexample"/></a></td></tr>
+	        		       <tr><td></td><td id="previewimg"><img src="" height="200" width="200" alt="" id="<%=namespace%>img"/></td><td><div style="display:none" id="imgalert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></div></td></tr>
+	        		       <tr><td><p><liferay-ui:message key="photoid"/><span style="color:red;margin:5px;">*</span></p></td><td><input type="text" id="<%=namespace%>photoid"></td></tr>
+	        		       <tr><td></td><td><div style="display:none" id="photoidalert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>
+	        		       </table>
+	        		       </div>
+     </div>
+ </div>
+  <div id="<%=namespace%>error">
+     <div id="<%=namespace%>errordetail"></div>
+     <div id="<%=namespace%>submitting">
+       <div id="<%=namespace%>submittingdetail"></div>
+     </div>
+  </div>
+    <div class="takephotocss">
+            <h5><liferay-ui:message key="takephotostep1"/></h5> 
+            <div class="photo_steps"> 
+            <h8><liferay-ui:message key="takephotostep2"/></h8> 
+            <ul><li><liferay-ui:message key="takephotostep3"/></li> <li><liferay-ui:message key="takephotostep4"/></li>
+             <li><liferay-ui:message key="takephotostep5"/></li>
+             <li><liferay-ui:message key="takephotostep6"/></li> 
+             </ul> 
+             </div>  
+    </div>
+    <div class="photoexample">
+       <img src="html/themes/classic/images/image_360.jpg"/>
+    </div>
+ <aui:script use="aui-base, node, event">
+ $(document).ready(function(){
+	    $('#<%=namespace%>birthday').keyup(function(){
+	    	
+	    	if($('#<%=namespace%>birthday').val().length==2){
+	    		$('#<%=namespace%>birthday').val($('#<%=namespace%>birthday').val()+"/");
+	    		
+	    	}else if($('#<%=namespace%>birthday').val().length==5){
+	    		$('#<%=namespace%>birthday').val($('#<%=namespace%>birthday').val()+"/");
+	    	}
+	    })
+		$('#takephoto').mouseover(function(){
+			var position1 = $('#<%=namespace%>profile').dialog("open").offset();
+			if($(document).width()>600){
+				 var left = position1.left+75;
+				 var top = position1.top+100;
+				 if(<%=is_en_US%>){
+				    	$('.takephotocss').css('height','260px');
+					}
+			}else{
+			    var left = position1.left+50;
+			    var top = position1.top+100;
+			    if(<%=is_en_US%>){
+			    	$('.takephotocss').css('height','415px');
+				}
+			}
+			$('.takephotocss').css('display','block');
+			$('.takephotocss').css('left',left);
+			$('.takephotocss').css('top',top);
+			
+			
+		})
+		$('#takeexample').mouseover(function(){
+			var position2 = $('#<%=namespace%>profile').dialog("open").offset();
+			if($(document).width()>600){
+				 var left = position2.left+75;
+				 var top = position2.top+100;
+			}else{
+			    var left = position2.left+50;
+			    var top = position2.top+100;
+			}
+			$('.photoexample').css('display','block');
+			$('.photoexample').css('left',left);
+			$('.photoexample').css('top',top);
+		})
+			$('#takephoto').mouseout(function(){
+			
+			$('.takephotocss').css('display','none');
+		})
+		$('#takeexample').mouseout(function(){
+			$('.photoexample').css('display','none');
+		})
+	   })
+	 
+if (Liferay.ThemeDisplay.isSignedIn()) {
+ 
+	   $('#<%=namespace%>click').click(function(){
+	    	updateinfo();
+	    });
+     	Liferay.Service(
+    			  '/LmSystemService-portlet.lmuser/get-all-user-infor',
+    			  {
+    			    userId: <%=userId%>,
+    			    localeCd: "<%=langId%>",
+    			  },
+    			  function(obj) {
+    			
+	      			if(obj.data.photo==""){
+	      				$('#previewimg').css('display','none');
+	      			}
+
+				     		        
+    			   
+    			    $('#<%=namespace%>birthday').val(obj.data.birthday);
+    			    if(obj.data.photo!=""){
+    			    	$("#<%=namespace%>img").attr("src",'data:'+obj.data.photo);
+    			    }
+    			    $('#<%=namespace%>photoid').val(obj.data.photoId);
+    			    $('#<%=namespace%>info').text(obj.data.userGroups[0]);
+    			   
+    			  }
+    			);
+	function updateinfo(){
+	     if($(window).width()>600){
+           	  var screenWidth = '500px';
+             }else{
+           	  var screenWidth = '300px';
+             }
+ 	$('#<%=namespace%>profile').dialog({
+		title: '<liferay-ui:message key="myprofile"/>',
+	        modal: true,
+	        width: screenWidth,
+	        height:'auto',
+	        resizable:false,
+	        position: { my: "center", at: "center", of: window },
+	        buttons:[
+	                 {      id:'save',
+         			        text: '<liferay-ui:message key="save"/>',
+         			        click: function() {
+         			    
+         			        	var newphotoid = $('#<%=namespace%>photoid').val();
+         			        	if(newphotoid==""){
+         			        		$('#photoidalert').css('display','block');
+         			        	}else{
+         			        		$('#photoidalert').css('display','none');
+         			        	}
+         			        	
+         			        	var newbirthday = $('#<%=namespace%>birthday').val();
+         			        	if(!newbirthday.match(/^\d{2}\/\d{2}\/\d{4}$/)){
+         			        		$('#<%=namespace%>wrong').css('display','block');
+         			        	}else{
+         			        		$('#<%=namespace%>wrong').css('display','none');
+         			        	}
+         			        	/* var newphotoori = $('#<%=namespace%>img').attr('src').replace(/^data:image\/(png|jpg|jpeg|PNG|JPG|JEPG);base64,/, ""); */
+         			        	var newphotoori = $('#<%=namespace%>img').attr('src');
+         			        	var newphoto = downscaleImage(newphotoori).replace(/^data:(image\/(png|jpg|jpeg|PNG|JPG|JEPG);base64)*,/, "");
+
+         			        	if(newphoto==""){
+         			        		$('#imgalert').css('display','block');
+         			        	}
+         			        	else{
+         			        		$('#imgalert').css('display','none');
+         			        	}	  
+         			        	//console.log(newphoto);
+         			        	if(newbirthday.match(/^\d{2}\/\d{2}\/\d{4}$/)&&newphotoid!=""&&newphoto!=""){
+         		
+	           			        $('#submitloading').show();
+	           			        $('#<%=namespace%>detail').hide();
+	           			        $('.ui-button').hide();
+         			        		Liferay.Service(
+           			        			  '/LmSystemService-portlet.lmuser/update-photo-id',
+           			        			  {
+           			        			    userId:<%=userId%> ,
+           			        			    photoId: newphotoid,
+           			        			    localeCd: "<%=langId%>"
+           			        			  },
+           			        			  function(obj) {
+           			        				  if(obj.status.code==200){
+           			        				Liferay.Service(
+                     			        			  '/LmSystemService-portlet.lmuser/update-photo',
+                     			        			  {
+                     			        			    userId: <%=userId%>,
+                     			        			    photoStr: newphoto,
+                     			        			    localeCd: "<%=langId%>"
+                     			        			  },
+                     			        			  function(obj) {
+                     			        				 if(obj.status.code==200){
+                     			        					Liferay.Service(
+           	                    			        			  '/LmSystemService-portlet.lmuser/update-user-birthday',
+           	                    			        			  {
+           	                    			        			    userId: <%=userId%>,
+           	                    			        			    birth: newbirthday,
+           	                    			        			    localeCd: "<%=langId%>"
+           	                    			        			  },
+           	                    			        			  function(obj) {
+           	                    			        				 if(obj.status.code==200){
+           	                    			        					//$('#<%=namespace%>submitting').dialog('close');
+                   			           			        				$('#<%=namespace%>profile').dialog('close'); 
+                   			           			        			    $('#submitloading').hide();
+                   			           			        		        $('#<%=namespace%>detail').show();
+                   			    	           			                $('.ui-button').show();
+                   			           			        			    
+           	                    			        				 }else{
+           	                    			        					$('#submitloading').hide();
+                   			           			        		        $('#<%=namespace%>detail').show();
+                   			    	           			                $('.ui-button').show();
+           	                    			           			        		$('#<%=namespace%>error').dialog({
+           	                                			        					title: '<liferay-ui:message key="error"/>',
+           	                                			        			        modal: true,
+           	                                			        			        width: screenWidth,
+           	                                			        			        height:'auto',
+           	                                			        			        resizable:false,
+           	                                			        			        position: { my: "center", at: "center", of: window },
+           	                                			        			        open: function(){
+           	                                			        			        	$('#<%=namespace%>errordetail').html('<p>'+obj.status.message+'<p>')
+           	                                			        			        	
+           	                                			        			        },
+           	                                			        			        buttons:[
+           	                                			        			                 {
+           	                                			        			                	id:'error',
+           	                                			        	         			        text: '<liferay-ui:message key="confirm"/>', 
+           	                                			        	         			        click: function() {
+           	                                			        	         			        	
+           	                                			        	         			        	$('#<%=namespace%>error').dialog('close');
+           	                                			        	         			        }
+           	                                			        			                 }
+           	                                			        			                 
+           	                                			        			                 ]
+           	                                			        				})
+           	                    			           			        		};
+           	                    			        			  }
+           	                    			        			)            
+                     			        				 }
+                     			        				         else{
+                     			        				        	$('#submitloading').hide();
+               			           			        		        $('#<%=namespace%>detail').show();
+               			    	           			                $('.ui-button').show();
+                     			        				        	$('#<%=namespace%>error').dialog({
+                                 			        					title: '<liferay-ui:message key="error"/>',
+                                 			        			        modal: true,
+                                 			        			        width: screenWidth,
+                                 			        			        height:'auto',
+                                 			        			        resizable:false,
+                                 			        			        position: { my: "center", at: "center", of: window },
+                                 			        			        open: function(){
+                                 			        			        	$('#<%=namespace%>errordetail').html('<p>'+obj.status.message+'<p>')
+                                 			        			        	
+                                 			        			        },
+                                 			        			        buttons:[
+                                 			        			                 {
+                                 			        			                	id:'error',
+                                 			        	         			        text: '<liferay-ui:message key="confirm"/>', 
+                                 			        	         			        click: function() {
+                                 			        	         			        	
+                                 			        	         			        	$('#<%=namespace%>error').dialog('close');
+                                 			        	         			        }
+                                 			        			                 }
+                                 			        			                 
+                                 			        			                 ]
+                                 			        				})
+                     	           			        			};
+                     			        			  }
+                     			        			)}else{
+                     			        				$('#submitloading').hide();
+   			           			        		        $('#<%=namespace%>detail').show();
+   			    	           			                $('.ui-button').show();
+                     			        				$('#<%=namespace%>error').dialog({
+                     			        					title: '<liferay-ui:message key="myprofile"/>',
+                     			        			        modal: true,
+                     			        			        width: screenWidth,
+                     			        			        height:'auto',
+                     			        			        resizable:false,
+                     			        			        position: { my: "center", at: "center", of: window },
+                     			        			        open: function(){
+                     			        			        	$('#<%=namespace%>errordetail').html('<p>'+obj.status.message+'<p>')
+                     			        			        	
+                     			        			        },
+                     			        			        buttons:[
+                     			        			                 {
+                     			        			                	id:'error',
+                     			        	         			        text: '<liferay-ui:message key="confirm"/>', 
+                     			        	         			        click: function() {
+                     			        	         			        	
+                     			        	         			        	$('#<%=namespace%>error').dialog('close');
+                     			        	         			        }
+                     			        			                 }
+                     			        			                 
+                     			        			                 ]
+                     			        				})
+                     			        				
+                     			        			};
+           			        			  }
+           			        			);
+           			  
+           			     
+         			        	}
+         			    }
+	                 }
+	                 
+	                 
+	                 
+	                 
+	                 
+	                 ]
+		
+	}) 
+	}
+	
+	
+	
+	
+}
+
+
+ 
+ </aui:script> 
+ <script>
+
+
+
+ function previewFile(){
+     var preview = document.querySelector('img'); //selects the query named img
+     var file    = document.querySelector('input[type=file]').files[0]; //sames as here
+     var reader  = new FileReader();
+
+     reader.onloadend = function () {
+    	 $("#<%=namespace%>img").attr("src",reader.result);
+    	 $('#previewimg').css('display','block');
+         //preview.src = reader.result;
+     }
+
+     if (file) {
+         //reader.readAsDataURL(file); //reads the data as a URL
+        reader.readAsDataURL(file);
+     } else {
+         preview.src = "";
+     }
+
+}
+ function downscaleImage(dataUrl) {
+	    "use strict";
+	    var image, oldWidth, oldHeight, newHeight, canvas, ctx, newDataUrl;
+
+	    // Provide default values
+	    imageType = 'jpeg';
+	    imageArguments = 1;
+
+	    // Create a temporary image so that we can compute the height of the downscaled image.
+	    image = new Image();
+	    image.src = dataUrl;
+	    oldWidth = image.width;
+	    oldHeight = image.height;
+	    newHeight = Math.floor(oldHeight / oldWidth * 900);
+        if(newHeight>700){
+        	newHeight = 699;
+	    }
+	    // Create a temporary canvas to draw the downscaled image on.
+	    canvas = document.createElement("canvas");
+	    canvas.width = 950;
+	    canvas.height = newHeight;
+	    // Draw the downscaled image on the canvas and return the new data URL.
+	    ctx = canvas.getContext("2d");
+	    ctx.drawImage(image, 0, 0, 950, newHeight);
+	    newDataUrl = canvas.toDataURL(imageType, imageArguments);
+	    return newDataUrl;
+	}
+ 
+</script>
+
+ 
+ 
+ 
+ 
