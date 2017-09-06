@@ -1,0 +1,2002 @@
+<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
+<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
+
+<%@ include file="/html/init.jsp" %>
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
+<%@ taglib uri="http://liferay.com/tld/aui" prefix="aui"%>
+
+<%@ page import="com.liferay.portal.theme.ThemeDisplay" %>
+<%@ page import="com.liferay.portal.kernel.util.WebKeys" %>
+<%@ page import="com.liferay.portal.model.User" %>
+<%@ page import="com.liferay.portal.kernel.language.LanguageUtil" %>
+<%@ page import="java.util.Date" %>
+<%@ page import="java.util.Calendar" %>
+
+<portlet:defineObjects />
+<liferay-theme:defineObjects />
+
+<%
+
+ThemeDisplay td  =(ThemeDisplay)request.getAttribute(WebKeys.THEME_DISPLAY);
+user = td.getUser();
+String fullName=user.getFullName();
+long userId=user.getUserId();
+
+String emailString=user.getEmailAddress().toString();
+
+String langId=LanguageUtil.getLanguageId(request);
+
+//boolean is_zh_CN=langId.equals("zh_CN");
+//String langId=LanguageUtil.getLanguageId(request);
+boolean is_en_US=langId.equals("en_US");
+boolean is_zh_CN=langId.equals("zh_CN");
+boolean is_ja_JP=langId.equals("ja_JP");
+boolean is_zh_TW=langId.equals("zh_TW");
+String submitButton="Submit";
+
+java.util.Date date= new Date();
+Calendar cal = Calendar.getInstance();
+cal.setTime(date);
+int month = cal.get(Calendar.MONTH);
+int year=cal.get(Calendar.YEAR);
+
+String confirmation_point_to_cash_1="You are requesting to converst ";
+String confirmation_point_to_cash_2="to cash and will receive (USD): $";
+String transfer_message_1="You don't have transferrable cash.";
+String pc_success="Your points conversion request is done successfully. You received (USD): $";
+String pc_failure="Your request of point conversion fails. Please contact help desk.";
+String cash_transfer_success="Your request of cash transferring is done successfully, Please check your cash account.";
+String cash_transfer_failure="Your request of cash transferring fails, Please contact the helpdesk.";
+String confirmation_id="Your confirmation number is ";
+String cash_transfer_confirmation1="You are transferring $";
+String cash_transfer_confirmation2=" to your cash account: ";
+String point_to_cash_message="You don't have point to cash.";
+String PleaseSelect="Please Select";
+String PleaseSelectAccount="Please select your account to transfer the money.";
+
+if(is_zh_CN)
+{
+	
+	submitButton="提交";
+	confirmation_point_to_cash_1="您请求转换";
+	confirmation_point_to_cash_2="点到现金，将获得(美元)： $";
+	transfer_message_1="您没有可转移的现金.";
+	pc_success="您的点转换现金现金请求成功。 您收到：$";
+	pc_failure="您的点转换现金现金请求失败,请联系服务台。";
+	cash_transfer_success="您的现金转移请求成功, 请检查您的现金帐户。";
+	cash_transfer_failure="您的现金转移失败, 请联系服务台。";
+	confirmation_id="您的确认号码: ";
+	cash_transfer_confirmation1="您正在转移 $";
+	cash_transfer_confirmation2="到您的现金帐户：";
+	point_to_cash_message="您没有点数量套现";
+	PleaseSelect="请选择";
+	PleaseSelectAccount="请选择您转移资金的账户。";
+}
+
+int cYear;
+
+
+
+
+
+
+
+String namespace="_agentprofits_WAR_ClientManagementportlet_";
+%>
+
+
+<div class="<%=namespace%>agentpoints">
+    
+    <div class="container">
+    <div class="liset">
+       <ul>
+          <li id="pointsview"><liferay-ui:message key="Points"/></li>
+          <li id="statusview"><liferay-ui:message key="Status"/></li>
+          <li id="rules"><liferay-ui:message key="Rules"/></li>
+       </ul>
+    </div>
+	
+	<div class="pointarea span9" id="<%=namespace%>mobliechange" >
+    <div class="firstpart">
+       <div id="fpart1" >
+         <div id="pointtitle">
+          <p id="available"><liferay-ui:message key="TotalAvailablePoints"/></p>
+          <p id="tv"></p>
+         </div>
+       </div>
+       <div id="fpart2">
+          <div id="pointinput" >
+             <p class="allfont"><liferay-ui:message key="howmuchredeem"/></p><!-- <p>available value to USD</p> -->
+             <div style="width:100%"><input type="text" id="baseUSD" onkeydown='return (event.which >= 48 && event.which <= 57) 
+   || event.which == 8' ></input></div><!-- <p style="height:25px;width:113px;padding:0;border-radius: 2px;border: solid 1px #afcab8;" id="usdcurrency"></p> -->
+             <p class="allfont" id="currency"><liferay-ui:message key="pointsto"/></p>
+             <div id="fpart2test"><p id="aimcurrency"></p><select id="currency1"><!-- <option value="USD">USD</option><option value="CNY">CNY</option><option value="JPY">JPY</option> --></select></div>
+          </div>
+       </div>
+       <div id="fpart3">
+          <div style="margin-top:44px;margin-bottom:44px;text-align: center;">
+             <p id="saveto"><liferay-ui:message key="redeemto"/></p>
+             <aui:select id="accountid" name="account"></aui:select>
+          </div>
+       </div>
+       <div id="fpart4">
+          <button id="redeem"><p style="font-size: 15px;color: #ffffff;line-height:25px"><liferay-ui:message key="redeem"/></p></button>
+          <div id="redeemmessage">
+            <div id="redeemmessagdetail"></div>
+          </div>
+       </div>    
+    </div>
+    <div id="redeemdialog">
+      <div id="exceeddetil"></div>
+    </div>
+    <div class="secondpart">
+      <div class='second1'>
+      <div style="width:80%;margin:auto">
+        <!-- <div><p tyle="font-size: 20px;color:black">Summary1</p></div> -->
+         <div style="margin-top: 40px;">
+         <div><p><liferay-ui:message key="TotalAvailableValue"/></p><strong><p id="tav" style="text-align: right;"></p></strong></div>
+         <div style="border-bottom: solid 1px #afcab8;margin-bottom: 15px;"><p><liferay-ui:message key="TotalAvailablePoints"/></p><strong><p id="tap" style="text-align: right;"></p></strong></div>
+         <div><p><liferay-ui:message key="TotalPendingValue"/></p><strong><p id="tpv" style="text-align: right;"></p></strong></div>
+         <div style="border-bottom: solid 1px #afcab8;margin-bottom: 15px;"><p><liferay-ui:message key="TotalPendingPoints"/></p><strong><p id="tpp" style="text-align: right;"></p></strong></div>
+         <div><p><liferay-ui:message key="TotalRedeemedValue"/></p><strong><p id="trv" style="text-align: right;"></p></strong></div>
+         <div style="border-bottom: solid 2.5px #afcab8;margin-bottom: 15px;"><p><liferay-ui:message key="TotalRedeemedPoint"/></p><strong><p id="trp" style="text-align: right;"></p></strong></div>
+         <div><strong><p><liferay-ui:message key="TotalEarnedValue"/></p></strong><strong><p id="tev" style="text-align: right;"></p></strong></div>
+         <div><strong><p><liferay-ui:message key="TotalEarnedPoints"/></p></strong><strong><p id="tep" style="text-align: right;"></p></strong></div>
+       </div>
+      </div>
+      </div>
+			<div class="second2">
+			  <div style="width:80%;margin:auto">
+			  <!-- <div><p tyle="font-size: 20px;">Summary2</p></div> -->
+			  <div class="select-group" style="display:inline-block;float:right;width:100%">
+					<div id="yearselect"><aui:select name="report_year" label="" style="float:left;width:100px;">
+					</aui:select></div>
+					<div id="monthselect"><aui:select name="report_month" label="" style="float:left;width:100px;">
+						<%-- <%=monthOptionString %>	 --%>	
+					</aui:select></div>
+			  </div>
+	
+        
+         <div >
+         <div><p><liferay-ui:message key="Points(Pts)/Month"/></p><strong><p id="pm" style="text-align: right;font-family: FZLTCHJW-GB1-0;"></p></strong></div>
+        <div style="border-bottom: solid 1px #afcab8;margin-bottom:15px"><p><liferay-ui:message key="Value($)/Month"/></p><strong><p id="vm" style="text-align: right;font-family: FZLTCHJW-GB1-0;"></p></strong></div>
+         <div><p><liferay-ui:message key="YTDPoints(Pts)"/></p><strong><p id="yp" style="text-align: right;font-family: FZLTCHJW-GB1-0;"></p></strong></div>
+         <div style="border-bottom: solid 3px #afcab8;margin-bottom:15px"><p><liferay-ui:message key="YTDValue($)"/></p><strong><p id="yv" style="text-align: right;font-family: FZLTCHJW-GB1-0;"></p></strong></div>
+         <div><p><liferay-ui:message key="RedeemedPoint(Pts)/Month"/></p><strong><p id="rp" style="text-align: right;font-family: FZLTCHJW-GB1-0;"></p></strong></div>
+         <div style="border-bottom: solid 1px #afcab8;margin-bottom:15px"><p><liferay-ui:message key="RedeemedValue($)/Month"/></p><strong><p id="rv" style="text-align: right;font-family: FZLTCHJW-GB1-0;"></p></strong></div>
+         <div><p><liferay-ui:message key="YTDRedeemedPoint(Pts)"/></p><strong><p id="yrp" style="text-align: right;font-family: FZLTCHJW-GB1-0;"></p></strong></div>
+         <div><p><liferay-ui:message key="YTDRedeemedValue($)"/></p><strong><p id="yrv" style="text-align: right;font-family: FZLTCHJW-GB1-0;"></p></strong></div>
+       </div>
+      </div>
+	   </div>
+     </div>	
+     </div>
+     <div class="status">
+     	<div class="noneres" >
+	                          <div class="no-icon">
+	                          </div>
+	                          <div class="no-res">
+	                               <p style="text-align:center"><liferay-ui:message key="noresult"/></p>
+	                          </div>
+	     </div> 
+          <table id="statusrecord" style="width:100%;text-align:left;display:none">
+          <thead>
+             <tr style="width:100%">
+             <th><liferay-ui:message key="date"/></th>
+             <th><liferay-ui:message key="orderid"/></th>
+             <th><liferay-ui:message key="Accountname"/></th>
+             <th><liferay-ui:message key="toCurrencyAmount"/></th>
+             <th><liferay-ui:message key="toCurrency"/></th>
+             <th><liferay-ui:message key="points"/></th>
+             <th><liferay-ui:message key="Status"/></th>
+             <th><liferay-ui:message key="ID"/></th>
+             <th></th>
+             </tr>
+            </thead>
+          </table>
+          <div id="statusdialog">
+             <div id="statusdetail"></div>
+          </div>
+          <div id="returnmessage">
+          <div id="returnmessagedetail"></div>
+          </div>
+     </div>
+     <div class="pointsrule" style="width:100%;display:none">
+     <% if(is_en_US){ %>
+     <div id="point_policy_container" style="color: #385622;padding-top:20px">
+<div id="point_policy_container_background">
+<h4><b>What is LineMoney Points?</b></h4>
+<p><span style="color: #2ab350">LineMoney Points</span> is a reward activity for <span style="color: #2ab350">LineMoney</span> users and Global VIP, who have used <span style="color: #2ab350">LineMoney</span> international remittance service or organized a team.</p>
+<div class="pointpolicy_divider" style="width: 40px;
+         height: 3px;
+         margin-top: 20px;
+         margin-bottom: 20px;
+           background-color: #2ab350;">&nbsp;</div>
+
+<h4>How to earn LM Points?</h4>
+<ol type="I">
+<li><span style="color: #2ab350">LineMoney</span> users can accumulate LM Points by using the remittance service. The rules are as follows:Number of LM Points = 100 * Single remittance fee *<span style="color: #2ab350">10%</span>*<span style="color: #2ab350">40%</span></li>
+<br>
+<li>For <span style="color: #2ab350">LineMoney</span> Global VIP, if any member of the team using <span style="color: #2ab350">LineMoney</span> quick remittance service can get the corresponding LM Points. The rules are as follows:</li>
+<p>The first upper-level Global VIP: the number of LM Points = 100 * single remittance fee *<span style="color: #2ab350">10%</span>*<span style="color: #2ab350">30%</span></p>
+<p>The second upper-level Global VIP: the number of LM Points = 100 * single remittance fee *<span style="color: #2ab350">10%</span>*<span style="color: #2ab350">20%</span></p>
+<p>The third upper-level Global VIP: the number of LM Points = 100 * single remittance fee *<span style="color: #2ab350">10%</span>*<span style="color: #2ab350">10%</span></p>
+</ol>
+<!-- <img src="/html/themes/classic/images/lmvipen.png" style="width:300px"> -->
+<p><small>Note: If the user team structure is single or less than three layers, the rules do not change</small></p><br />
+<div class="pointpolicy_divider" style="width: 40px;
+         height: 3px;
+         margin-top: 20px;
+         margin-bottom: 20px;
+           background-color: #2ab350;">&nbsp;</div>
+
+<h4>LM Points Query</h4>
+<p>Users can log on to the personal account page, click on "My Info" under the "LM Points & Rewards" to query LM Points to obtain the situation.</p>
+
+<div class="pointpolicy_divider" style="width: 40px;
+         height: 3px;
+         margin-top: 20px;
+         margin-bottom: 20px;
+           background-color: #2ab350;">&nbsp;</div>
+
+<h4>Redeem LM Points</h4>
+<p>In the "LM Points & Profits" page, members enter the redeem LM Points, choose the currency, select the redeem amount deposited into the account, click on "Redeem". Once the redemption is successful, LM Points cannot be modified or returned.</p>
+<div class="pointpolicy_divider" style="width: 40px;
+         height: 3px;
+         margin-top: 20px;
+         margin-bottom: 20px;
+           background-color: #2ab350;">&nbsp;</div>
+
+<h4>Will LM Points expire?</h4>
+<p><span style="color: #2ab350">LineMoney</span> LM Points are permanently effective; if not special circumstances will not be cleared, the user can redeem at any time.</p>
+<div class="pointpolicy_divider" style="width: 40px;
+         height: 3px;
+         margin-top: 20px;
+         margin-bottom: 20px;
+           background-color: #2ab350;">&nbsp;</div>
+
+
+<h4>Modify and terminate</h4>
+<p>Anything that has been accumulated will be considered invalid, and the <span style="color: #2ab350">LineMoney</span> reserves the right to pursue legal liability for the cardholder and the amount of money that has been redeemed and the amount of money, whether it has been involved in any false information, false trading, fraud or fraud.</p><br />
+
+<p><span style="color: #2ab350"><b>LineMoney reserves the right to make final interpretations of the above terms and shall be entitled to cancel the plan or to add or remove the rules at any time, and shall enter into force upon the announcement of relevant means such as our website.</b></span></p>
+</div>
+</div>
+    <% }else if(is_zh_CN){ %>
+    
+<div id="point_policy_container" style="color: #385622;padding-top:20px">
+<div id="point_policy_container_background">
+<h4><b>一、什么是LM积分</b></h4>
+<p>会员LM积分是<span style="color: #2ab350">LineMoney</span>快汇为回馈广大用户推出的奖励活动，是对使用<span style="color: #2ab350">LineMoney</span>国际汇款服务的有效会员或组建团队的环球VIP用户进行的赠送奖励。</p>
+<div class="pointpolicy_divider" style="width: 40px;
+         height: 3px;
+         margin-top: 20px;
+         margin-bottom: 20px;
+           background-color: #2ab350;">&nbsp;</div>
+<h4>二、获取LM积分</h4>
+<ol>
+<li><span style="color: #2ab350">LineMoney</span>快汇用户通过使用汇款服务即可累积LM积分，获取规则如下：LM积分数量=单笔汇款手续费*<span style="color: #2ab350">10%</span>*<span style="color: #2ab350">40%</span></li>
+<li><span style="color: #2ab350">LineMoney</span>快汇用户成为环球VIP用户后，若团队中任何成员使用<span style="color: #2ab350">LineMoney</span>快汇汇款服务即可获取相应LM积分，获取规则如下：（如图）</li>
+<p>第一层环球VIP用户：LM积分数量=单笔汇款手续费*<span style="color: #2ab350">10%</span>*<span style="color: #2ab350">30%</span></p>
+<p>第二层环球VIP用户：LM积分数量=单笔汇款手续费*<span style="color: #2ab350">10%</span>*<span style="color: #2ab350">20%</span></p>
+<p>第三层环球VIP用户：LM积分数量=单笔汇款手续费*<span style="color: #2ab350">10%</span>*<span style="color: #2ab350">10%</span></p>
+</ol>
+<!-- <img src="/html/themes/classic/images/lmvipzh.png" style="width:300px"> -->
+<p><small>注：若用户团队结构单一或未满三层，LM积分获取规则不变</small></p>
+<div class="pointpolicy_divider" style="width: 40px;
+         height: 3px;
+         margin-top: 20px;
+         margin-bottom: 20px;
+           background-color: #2ab350;">&nbsp;</div>
+<h4>三、LM积分查询</h4>
+<p>用户可通过登录个人账户页面，点击“我的信息”下“我的利润和奖金”查询LM积分获取情况。</p>
+<div class="pointpolicy_divider" style="width: 40px;
+         height: 3px;
+         margin-top: 20px;
+         margin-bottom: 20px;
+           background-color: #2ab350;">&nbsp;</div>
+
+<h4>四、LM积分使用</h4>
+<p>在“我的利润和奖金”页面，会员输入兑换LM积分，选择兑换金额积分种，选择兑换金额存入账户，点击“兑换”。会员LM积分一旦兑换成功后，不能修改或退换。</p>
+<div class="pointpolicy_divider" style="width: 40px;
+         height: 3px;
+         margin-top: 20px;
+         margin-bottom: 20px;
+           background-color: #2ab350;">&nbsp;</div>
+<h4>五、LM积分有效期</h4>
+<p><span style="color: #2ab350">LineMoney</span>快汇用户LM积分永久有效，若非特殊情况不会清零，用户可随时兑换。</p>
+<div class="pointpolicy_divider" style="width: 40px;
+         height: 3px;
+         margin-top: 20px;
+         margin-bottom: 20px;
+           background-color: #2ab350;">&nbsp;</div>
+<h4>六、修改与终止</h4>
+<p>用户任何涉及虚假信息、虚假交易、舞弊或欺诈行为，一经发现，所有已累计的LM积分将视作无效，<span style="color: #2ab350">LineMoney</span>快汇保留对持卡人追究法律责任的权利和已兑换LM积分及金额的追回权。</p><br />
+
+<p><span style="color: #2ab350"><b>LineMoney快汇保留对上述条款作出最终解释的权利，有权根据需要取消本计划或随时增删、修订本规则，经过我方网站等相关途径公告后生效。</b></span></p>
+</div>
+</div>
+    <% }else if(is_ja_JP){ %>
+    <div id="point_policy_container" style="color: #385622;padding-top:20px">
+<div id="point_policy_container_background">
+<h4><b>一、什么是积分</b></h4>
+<p>会员积分是<span style="color: #2ab350">LineMoney</span>快汇为回馈广大用户推出的奖励活动，是对使用<span style="color: #2ab350">LineMoney</span>国际汇款服务的有效会员或组建团队的环球VIP用户进行的赠送奖励。</p>
+<div class="pointpolicy_divider" style="width: 40px;
+         height: 3px;
+         margin-top: 20px;
+         margin-bottom: 20px;
+           background-color: #2ab350;">&nbsp;</div>
+<h4>二、获取积分</h4>
+<ol>
+<li><span style="color: #2ab350">LineMoney</span>快汇用户通过使用汇款服务即可累积积分，获取规则如下：积分数量=单笔汇款手续费*<span style="color: #2ab350">10%</span>*<span style="color: #2ab350">40%</span></li>
+<li><span style="color: #2ab350">LineMoney</span>快汇用户成为环球VIP用户后，若团队中任何成员使用<span style="color: #2ab350">LineMoney</span>快汇汇款服务即可获取相应积分，获取规则如下：（如图）</li>
+<p>第一层环球VIP用户：积分数量=单笔汇款手续费*<span style="color: #2ab350">10%</span>*<span style="color: #2ab350">30%</span></p>
+<p>第二层环球VIP用户：积分数量=单笔汇款手续费*<span style="color: #2ab350">10%</span>*<span style="color: #2ab350">20%</span></p>
+<p>第三层环球VIP用户：积分数量=单笔汇款手续费*<span style="color: #2ab350">10%</span>*<span style="color: #2ab350">10%</span></p>
+</ol>
+<!-- <img src="/html/themes/classic/images/lmvipzh.png" style="width:300px"> -->
+<p><small>注：若用户团队结构单一或未满三层，积分获取规则不变</small></p>
+<div class="pointpolicy_divider" style="width: 40px;
+         height: 3px;
+         margin-top: 20px;
+         margin-bottom: 20px;
+           background-color: #2ab350;">&nbsp;</div>
+<h4>三、积分查询</h4>
+<p>用户可通过登录个人账户页面，点击“我的信息”下“我的利润和奖金”查询积分获取情况。</p>
+<div class="pointpolicy_divider" style="width: 40px;
+         height: 3px;
+         margin-top: 20px;
+         margin-bottom: 20px;
+           background-color: #2ab350;">&nbsp;</div>
+
+<h4>四、积分使用</h4>
+<p>在“我的利润和奖金”页面，会员输入兑换积分，选择兑换金额积分种，选择兑换金额存入账户，点击“兑换”。会员积分一旦兑换成功后，不能修改或退换。</p>
+<div class="pointpolicy_divider" style="width: 40px;
+         height: 3px;
+         margin-top: 20px;
+         margin-bottom: 20px;
+           background-color: #2ab350;">&nbsp;</div>
+<h4>五、积分有效期</h4>
+<p><span style="color: #2ab350">LineMoney</span>快汇用户积分永久有效，若非特殊情况不会清零，用户可随时兑换。</p>
+<div class="pointpolicy_divider" style="width: 40px;
+         height: 3px;
+         margin-top: 20px;
+         margin-bottom: 20px;
+           background-color: #2ab350;">&nbsp;</div>
+<h4>六、修改与终止</h4>
+<p>用户任何涉及虚假信息、虚假交易、舞弊或欺诈行为，一经发现，所有已累计的积分将视作无效，<span style="color: #2ab350">LineMoney</span>快汇保留对持卡人追究法律责任的权利和已兑换积分及金额的追回权。</p><br />
+
+<p><span style="color: #2ab350"><b>LineMoney快汇保留对上述条款作出最终解释的权利，有权根据需要取消本计划或随时增删、修订本规则，经过我方网站等相关途径公告后生效。</b></span></p>
+</div>
+</div>
+    <%} %>
+     </div>
+     </div>
+</div>
+
+
+<div style="display:none">
+  <div id="1"><liferay-ui:message key="linemoney-january"/></div>
+  <div id="2"><liferay-ui:message key="linemoney-february"/></div>
+  <div id="3"><liferay-ui:message key="linemoney-march"/></div>
+  <div id="4"><liferay-ui:message key="linemoney-april"/></div>
+  <div id="5"><liferay-ui:message key="linemoney-may"/></div>
+  <div id="6"><liferay-ui:message key="linemoney-june"/></div>
+  <div id="7"><liferay-ui:message key="linemoney-july"/></div>
+  <div id="8"><liferay-ui:message key="linemoney-august"/></div>
+  <div id="9"><liferay-ui:message key="linemoney-september"/></div>
+  <div id="10"><liferay-ui:message key="linemoney-october"/></div>
+  <div id="11"><liferay-ui:message key="linemoney-november"/></div>
+  <div id="12"><liferay-ui:message key="linemoney-december"/></div>
+</div> 
+
+<aui:script use="aui-base, node, event">
+var report_year=A.one('#<portlet:namespace/>report_year');
+var report_month=A.one('#<portlet:namespace/>report_month');
+var curyear=<%=year%>;
+var curmonth=<%=month%>;
+var today = new Date();
+var statusdata = [];
+var minpoints=0;
+function getpointsInfor(info){
+	 var js_text ='{"date": "'+info.date+'","orderid": "'+info.orderId+'","accountName": "'+info.toAcctName+'","toCurrencyAmount": "'+info.toCurrencyAmount+'","toCurrency": "'+info.toCurrency+'","point": "'+info.point+'","status": "'+info.status+'","id": "'+info.id+'"}';
+	 return JSON.parse(js_text);
+}
+//console.log(selectedYearValue);
+//console.log(parseInt(curyear));
+function getMonths(number){
+	var months=[];
+	
+		   for (var i=1; i <= 12; i++){
+			   	  var month=document.getElementById(i+"").innerHTML;
+			   	  months.push(month);
+			    }
+	//console.log(months);
+    return months;
+}
+
+function refreshMonth(report_month, insertmonth, selectedMonthValue){
+	for (var i = 0; i < insertmonth.length; i++) {
+		if (i + 1 == selectedMonthValue){
+			 var option = A.Node.create('<option value=\"' + (i+1) + '\" selected>' + insertmonth[i] + '</option>');
+			 report_month.append(option);
+		} else{
+			 var option = A.Node.create('<option value=\"' + (i+1) + '\">' + insertmonth[i] + '</option>');
+			 report_month.append(option);
+		} 
+	}
+	return report_month;
+}
+
+function initSelection(report_year, report_month, curYear, curMonth){
+	for (var i = 2; i >= 0; i--) {
+		cYear=curYear-i;
+		var option = A.Node.create('<option value=\"' + cYear + '\" selected>' + cYear + '</option>');
+		report_year.append(option);
+	}
+	
+	var insertmonth = getMonths(curMonth);
+	refreshMonth(report_month, insertmonth, insertmonth.length - 1);
+}
+
+function getDateString(date)
+{
+	var dd = date.getDate();
+	var mm = date.getMonth()+1; //January is 0!
+	var yyyy = date.getFullYear();
+	
+	return mm+"/"+dd+"/"+yyyy;
+}
+
+
+if (Liferay.ThemeDisplay.isSignedIn()){
+	$('#statusrecord_wrapper').css('display','none');
+    $('#statusview').click(function(){
+    	$('.status').show();
+    	$('.pointarea').css('display','none');
+    	$('.pointsrule').css('display','none');
+    	$('#statusview').css('background-color','#2ab350');
+    	$('#statusview').css('color','white');
+    	$('#pointsview').css('background-color','white');
+    	$('#pointsview').css('color','#2ab350');
+    	$('#rules').css('background-color','white');
+    	$('#rules').css('color','#2ab350');
+    	if(statusdata.length!=0){
+    		generatetable(statusdata);
+    	}
+    })
+    $('#pointsview').click(function(){
+    	$('.status').css('display','none');
+    	$('.pointarea').css('display','block');
+    	$('.pointsrule').css('display','none');
+    	$('#pointsview').css('background-color','#2ab350');
+    	$('#pointsview').css('color','white');
+    	$('#statusview').css('background-color','white');
+    	$('#statusview').css('color','#2ab350');
+    	$('#rules').css('background-color','white');
+    	$('#rules').css('color','#2ab350');
+    })
+        $('#rules').click(function(){
+    	$('.status').css('display','none');
+    	$('.pointarea').css('display','none');
+    	$('.pointsrule').css('display','block');
+    	$('#rules').css('background-color','#2ab350');
+    	$('#rules').css('color','white');
+    	$('#pointsview').css('background-color','white');
+    	$('#pointsview').css('color','#2ab350');
+    	$('#statusview').css('background-color','white');
+    	$('#statusview').css('color','#2ab350');
+    })
+    Liferay.Service(
+  '/LmReferenceServices-portlet.countrycurrency/get-currency-country-list',
+  {
+    localeCd: 'zh_CN'
+  },
+  function(obj) {
+    
+    for(var i=0;i<obj.value.length;i++){
+        var x = document.getElementById("currency1");
+        var option = document.createElement("option");
+        option.text = obj.value[i].currencyCd;
+        option.value=obj.value[i].currencyCd;
+        x.add(option);
+    }
+	Liferay.Service(
+			  '/LmAccountServices-portlet.account/get-user-account',
+			  {
+			    userId: <%=userId %>,
+			    localeCd:'<%=langId %>'
+			  },
+			  function(obj) {
+				  accounts = [];
+		        accountnames=[];
+		        cnyaccounts =[];
+		        cnyaccountnames =[];
+		        usdaccounts =[];
+		        usdaccountnames =[];
+		        jpyaccounts =[];
+		        jpyaccountnames =[];
+		        
+		        
+		        for(var i=0;i<obj.value.length;i++){
+	        		//console.log(response[i].accountId);
+	        		if(obj.value[i].activeFlag=="Y"){
+	        		accounts.push(obj.value[i].accountId);
+	        		accountnames.push(obj.value[i].accountName);
+	        		}
+	        		if(obj.value[i].activeFlag=="Y" && obj.value[i].currencyCd=="CNY"){
+	        			cnyaccounts.push(obj.value[i].accountId);
+		        		cnyaccountnames.push(obj.value[i].accountName);
+	        		}else if(obj.value[i].activeFlag=="Y" && obj.value[i].currencyCd=="USD"){
+	        			usdaccounts.push(obj.value[i].accountId);
+		        		usdaccountnames.push(obj.value[i].accountName);
+	        		}else if(obj.value[i].activeFlag=="Y" && obj.value[i].currencyCd=="JPY"){
+	        			jpyaccounts.push(obj.value[i].accountId);
+		        		jpyaccountnames.push(obj.value[i].accountName);
+	        		}
+	        	}
+			  //console.log(accounts);
+			  //console.log(accountnames);
+			  if($( "#currency1 option:selected" ).val()=="USD"){
+				  for (var i = usdaccountnames.length - 1; i >= 0; i--) {
+	                    var option = A.Node.create('<option value=\"' + usdaccounts[i] + '\" selected>' + usdaccountnames[i] + '</option>');
+	                    accountid.append(option);
+	                }
+			  }else if($( "#currency1 option:selected" ).val()=="CNY"){
+				  for (var i = cnyaccountnames.length - 1; i >= 0; i--) {
+	                    var option = A.Node.create('<option value=\"' + cnyaccounts[i] + '\" selected>' + cnyaccountnames[i] + '</option>');
+	                    accountid.append(option);
+	                }
+			  }else if($( "#currency1 option:selected" ).val()=="JPY"){
+				  for (var i = jpyaccountnames.length - 1; i >= 0; i--) {
+	                    var option = A.Node.create('<option value=\"' + jpyaccounts[i] + '\" selected>' + jpyaccountnames[i] + '</option>');
+	                    accountid.append(option);
+	                }
+			  }
+			  
+			  }
+			);
+  }
+);
+	Liferay.Service(
+	  '/LmCurrencyConverter-portlet.fxrate/calculate',
+	  {
+	    source: 'USD',
+	    target: 'CNY',
+	    sendAmount: 0,
+	    receivedAmount: 0,
+	    serviceTypeCd: 'ServiceType_101',
+	    userDefineRate: 0,
+	    localeCd: 'zh_CN'
+	  },
+	  function(obj) {
+		  //console.log(obj);
+	    //console.log(obj.data.lmData.linemoneyRate);
+	    CNYtemrate = obj.data.lmData.linemoneyRate;
+	    //console.log(obj.data.lmData.sign);
+	  }
+	);
+	Liferay.Service(
+			  '/LmCurrencyConverter-portlet.fxrate/calculate',
+			  {
+			    source: 'USD',
+			    target: 'JPY',
+			    sendAmount: 0,
+			    receivedAmount: 0,
+			    serviceTypeCd: 'ServiceType_101',
+			    userDefineRate: 0,
+			    localeCd: 'zh_CN'
+			  },
+			  function(obj) {
+			    //console.log(obj.data.lmData.linemoneyRate);
+			    JPYtemrate = obj.data.lmData.linemoneyRate;
+			    //console.log(obj.data.lmData.sign);
+			  }
+			);
+
+	
+	$("#baseUSD").keyup(function(){
+		//var value = A.one('#<portlet:namespace/>currency');
+		//var selectedValue = value.get('options').item(value.get('selectedIndex')).get('value');
+		//console.log(selectedValue);
+		
+		 var usdinfo = ratetousd*parseInt($('#baseUSD').val());
+
+		//console.log($( "#currency1 option:selected" ).val());
+		if($( "#currency1 option:selected" ).val()=="USD"){
+			
+			var info = Math.floor(ratetousd*parseInt($('#baseUSD').val())*100)/100;
+			
+			if(isNaN(info)){
+				
+				info='';
+			}
+			document.getElementById('aimcurrency').innerHTML=info;
+	
+			
+		}else if($( "#currency1 option:selected" ).val()=="CNY"){
+	
+			var info = Math.floor(ratetousd*parseInt($('#baseUSD').val())*CNYtemrate*100)/100;
+			
+			if(isNaN(info)){
+				
+				info='';
+			}
+			document.getElementById('aimcurrency').innerHTML=info;
+		
+		}else if($( "#currency1 option:selected" ).val()=="JPY"){
+	
+			var info = Math.floor(ratetousd*parseInt($('#baseUSD').val())*JPYtemrate*100)/100;
+			
+			if(isNaN(info)){
+				
+				info='';
+			}
+			document.getElementById('aimcurrency').innerHTML=info;
+	
+		}
+	});
+	$( "#currency1" ).change(function() {
+
+		if($( "#currency1 option:selected" ).val()=="USD"){
+			var info = Math.floor(ratetousd*parseInt($('#baseUSD').val())*100)/100;
+			
+			if(isNaN(info)){
+				
+				info='';
+			}
+			document.getElementById('aimcurrency').innerHTML=info;
+			//console.log(usdaccountnames);
+			document.getElementById("<portlet:namespace/>accountid").options.length=0;
+			  for (var i = usdaccountnames.length - 1; i >= 0; i--) {
+                var option = A.Node.create('<option value=\"' + usdaccounts[i] + '\" selected>' + usdaccountnames[i] + '</option>');
+                accountid.append(option);
+            }
+		}else if($( "#currency1 option:selected" ).val()=="CNY"){
+			var info = Math.floor(ratetousd*parseInt($('#baseUSD').val())*CNYtemrate*100)/100;
+			
+			if(isNaN(info)){
+				
+				info='';
+			}
+			document.getElementById('aimcurrency').innerHTML=info;
+			//console.log(cnyaccountnames);
+			document.getElementById("<portlet:namespace/>accountid").options.length=0;
+			  for (var i = cnyaccountnames.length - 1; i >= 0; i--) {
+              var option = A.Node.create('<option value=\"' + cnyaccounts[i] + '\" selected>' + cnyaccountnames[i] + '</option>');
+              accountid.append(option);
+          }
+		}else if($( "#currency1 option:selected" ).val()=="JPY"){
+			var info = Math.floor(ratetousd*parseInt($('#baseUSD').val())*JPYtemrate*100)/100;
+			
+			if(isNaN(info)){
+				
+				info='';
+			}
+			document.getElementById('aimcurrency').innerHTML=info;
+			//console.log(jpyaccountnames);
+			document.getElementById("<portlet:namespace/>accountid").options.length=0;
+			  for (var i = jpyaccountnames.length - 1; i >= 0; i--) {
+              var option = A.Node.create('<option value=\"' + jpyaccounts[i] + '\" selected>' + jpyaccountnames[i] + '</option>');
+              accountid.append(option);
+          }
+		}
+		
+	})
+	
+	var accountid = A.one('#<portlet:namespace/>accountid');
+	Liferay.Service(
+			  '/LmAgentPoint-portlet.userpoint/get-redemption-history',
+			  {
+			    userId: <%=userId %>,
+			    localeCd:'<%=langId %>'
+			  },
+			  function(obj) {
+				  //console.log(obj);
+				  var data = [];
+				  var datajson = [];			    	
+			    	for(var i=0;i<obj.value.redemptions.length;i++){
+			    		var tem = getpointsInfor(obj.value.redemptions[i]);
+			    		datajson.push(tem);
+			    	
+			    }
+			    	//console.log(datajson);
+			       for(var i=0;i<datajson.length;i++){
+			        	 var arr3 = Object.keys(datajson[i]).map(function (key) { return datajson[i][key]; });
+			        	 data.push(arr3);
+			         }
+			       for(var i=0;i<data.length;i++){
+  			    	 /*   var strDateTime = data[i][0];
+  	    			   var myDate = new Date(strDateTime);
+  	    			   data[i][0]=myDate.toLocaleString(); */
+  	    			   if(<%=is_zh_CN%>){
+  	    				   if(data[i][6]=='canceled'){
+  	    				      data[i][6]='已取消';
+  	    				   }else if(data[i][6]=='pending'){
+  	    					 data[i][6]='处理中';
+  	    				   }else{
+  	    					 data[i][6]='已完成';
+  	    				   }
+  	    			   }
+  	    			  if(<%=is_zh_TW%>){
+
+	  	    				if(data[i][6]=='canceled'){
+	  	    				data[i][6]='已取消';
+	  	    				}else if(data[i][6]=='pending'){
+	  	    				data[i][6]='處理中';
+	  	    				}else{
+	  	    				data[i][6]='已完成';
+	  	    				}
+	  	    			   }
+  	    			   if(<%=is_ja_JP%>){
+  	    				   if(data[i][6]=='canceled'){
+  	    				      data[i][6]='キャンセル済み';
+  	    				   }else if(data[i][6]=='pending'){
+  	    					 data[i][6]='処理中';
+  	    				   }else{
+  	    					 data[i][6]='完成済';
+  	    				   }
+  	    			   }
+  			       }
+			       //console.log(data);
+			       if(data.length==0){
+			    	   
+			       }else{
+			    	   statusdata = data;
+			    	   generatetable(data);
+			       }
+			       }	
+			);
+
+	Liferay.Service(
+			  '/LmAgentPoint-portlet.pointrateref/get-min-point',
+			  function(obj) {
+				  minpoints=obj;
+			  }
+			);
+	Liferay.Service(
+			  '/LmAgentPoint-portlet.userpoint/get-summary',
+			  {
+			    userId: <%=userId %>,
+			    localeCd:'<%=langId %>'
+			  },
+			  function(obj) {
+				  /* document.getElementsById('<%=namespace%>total_cashable_points').innerHTML = obj.value.totalAvailable; */
+				  //console.log(obj.value);
+				  totalvalue = obj.value.totalAvailableValue;
+				  ratetousd = obj.value.pointToUsd;
+				  document.getElementById('tav').innerHTML=obj.value.totalAvailableValue;
+				  document.getElementById('tap').innerHTML=obj.value.totalAvailable;
+				  document.getElementById('tpv').innerHTML=obj.value.totalPendingRedemptionValue;
+				  document.getElementById('tpp').innerHTML=obj.value.totalPendingRedemption;
+				  document.getElementById('trv').innerHTML=obj.value.totalRedeemedValue;
+				  document.getElementById('trp').innerHTML=obj.value.totalRedeemed;
+				  document.getElementById('tev').innerHTML=obj.value.totalEarnedValue;
+				  document.getElementById('tep').innerHTML=obj.value.totalEarned;
+				  document.getElementById('tv').innerHTML=obj.value.totalAvailable;
+			  }
+			);
+	initSelection(report_year, report_month, curyear, curmonth);
+	var selectedYearValue = report_year.get('options').item(report_year.get('selectedIndex')).get('value');
+    var selectedMonthValue = report_month.get('options').item(report_month.get('selectedIndex')).get('value');
+	Liferay.Service(
+			  '/LmAgentPoint-portlet.userpoint/get-points-by-year-month',
+			  {
+					year: selectedYearValue,
+				    userId: <%=userId %>,
+				    month: selectedMonthValue,
+				    localeCd:'<%=langId %>'
+			  },
+			  function(obj) {
+			    //console.log(obj.value);
+				  document.getElementById('pm').innerHTML=obj.value.monthPoint;
+				  document.getElementById('vm').innerHTML=obj.value.monthPointValue;
+				  document.getElementById('yp').innerHTML=obj.value.yearToDatePoint;
+				  document.getElementById('yv').innerHTML=obj.value.yearToDatePointValue;
+				  document.getElementById('rp').innerHTML=obj.value.monthRedeemPoint;
+				  document.getElementById('rv').innerHTML=obj.value.monthRedeemValue;
+				  document.getElementById('yrp').innerHTML=obj.value.yearToDateRedeemPoint;
+				  document.getElementById('yrv').innerHTML=obj.value.yearToDateRedeemValue;
+
+			  }
+			);
+	
+	report_year.on('change', function(event){
+		event.stopPropagation();
+		var insertmonth = getMonths(<%=month%>);
+		//refreshMonth(report_month, insertmonth, insertmonth.length - 1);
+		var selectedYearValue = report_year.get('options').item(report_year.get('selectedIndex')).get('value');
+	    var selectedMonthValue = report_month.get('options').item(report_month.get('selectedIndex')).get('value');
+	    //console.log(selectedMonthValue);
+	    //console.log(selectedYearValue);
+			var reportDateString=selectedMonthValue+"/1/"+selectedYearValue;
+			//console.log(reportDateString);	
+			Liferay.Service(
+					  '/LmAgentPoint-portlet.userpoint/get-points-by-year-month',
+					  {
+						year: selectedYearValue,
+					    userId: <%=userId %>,
+					    month: selectedMonthValue,
+					    localeCd:'<%=langId %>'
+					  },
+					  function(obj) {
+                           // console.log(obj.value);
+						  document.getElementById('pm').innerHTML=obj.value.monthPoint;
+						  document.getElementById('vm').innerHTML=obj.value.monthPointValue;
+						  document.getElementById('yp').innerHTML=obj.value.yearToDatePoint;
+						  document.getElementById('yv').innerHTML=obj.value.yearToDatePointValue;
+						  document.getElementById('rp').innerHTML=obj.value.monthRedeemPoint;
+						  document.getElementById('rv').innerHTML=obj.value.monthRedeemValue;
+						  document.getElementById('yrp').innerHTML=obj.value.yearToDateRedeemPoint;
+						  document.getElementById('yrv').innerHTML=obj.value.yearToDateRedeemValue;
+			
+					  }
+					);
+		//}
+		
+		
+	    });
+	
+	report_month.on('change', function(event){
+		//event.stopPropagation();
+				var insertmonth = getMonths(<%=month%>);
+		//refreshMonth(report_month, insertmonth, insertmonth.length - 1);
+	  	var report_year = document.getElementById("<portlet:namespace/>report_year");
+		var selectedYearValue = report_year.options[report_year.selectedIndex].value;
+		
+	  	var report_month = document.getElementById("<portlet:namespace/>report_month");
+	  	var selectedMonthValue = report_month.options[report_month.selectedIndex].value;	
+	  	//console.log(selectedMonthValue);
+		var reportDateString=selectedMonthValue+"/1/"+selectedYearValue;
+			
+			//alert(reportDateString);
+			
+			Liferay.Service(
+					  '/LmAgentPoint-portlet.userpoint/get-points-by-year-month',
+					  {
+							year: selectedYearValue,
+						    userId: <%=userId %>,
+						    month: selectedMonthValue,
+						    localeCd:'<%=langId %>'
+					  },
+					  function(obj) {
+						    //console.log(obj.value);
+						    var data = [];
+						 
+					        	 var arr6 = Object.keys(obj.value).map(function (key) { return obj.value[key]; });
+					        	 //console.log(arr6);
+					        	 data.push(arr6);
+					       	  document.getElementById('pm').innerHTML=obj.value.monthPoint;
+							  document.getElementById('vm').innerHTML=obj.value.monthPointValue;
+							  document.getElementById('yp').innerHTML=obj.value.yearToDatePoint;
+							  document.getElementById('yv').innerHTML=obj.value.yearToDatePointValue;
+							  document.getElementById('rp').innerHTML=obj.value.monthRedeemPoint;
+							  document.getElementById('rv').innerHTML=obj.value.monthRedeemValue;
+							  document.getElementById('yrp').innerHTML=obj.value.yearToDateRedeemPoint;
+							  document.getElementById('yrv').innerHTML=obj.value.yearToDateRedeemValue;
+						    //console.log(data);
+						    //generatepoints(data);
+					  }
+					);
+	});
+	
+	$('#redeem').click(function(){
+		var tocurrency = $( "#currency1 option:selected" ).val();
+		//console.log(tocurrency);
+		
+		var usd = Math.floor(ratetousd*parseInt($('#baseUSD').val())*100)/100;
+		if(isNaN(usd)){
+	    	 $('#redeemdialog').dialog({
+	    		    title:'message',
+	    		    modal: true,
+	     	        width: screenWidth,
+	     	        height:'auto',
+	     	        resizable:false,
+	     	        position: { my: "center", at: "center", of: window },
+	     	        open: function(){
+		     	    	  $('#exceeddetil').html('<p><strong><liferay-ui:message key="NAN"/></strong></p>')
+		     	       },
+	     	        buttons: [ {
+	     	        	         text:'<liferay-ui:message key="confirm"/>',
+	     	        	         click:function(){
+	     	        	        	$('#redeemdialog').dialog('close');
+	     	        	         }
+	     	                   },
+	             			  ],
+	    		 
+	    	 })
+	    	 	$(".ui-dialog-titlebar").css("background-color", "#61cc61");
+	         	$(".ui-dialog-title").css("color", "white");
+	         	$(".ui-dialog").css("position", "center");
+		}else if(minpoints>$('#baseUSD').val()){
+	    	 $('#redeemdialog').dialog({
+	    		    title:'message',
+	    		    modal: true,
+	     	        width: screenWidth,
+	     	        height:'auto',
+	     	        resizable:false,
+	     	        position: { my: "center", at: "center", of: window },
+	     	        open: function(){
+		     	    	  $('#exceeddetil').html('<p><strong><liferay-ui:message key="minum"/> '+minpoints+'</strong></p>')
+		     	       },
+	     	        buttons: [ {
+	     	        	         text:'<liferay-ui:message key="confirm"/>',
+	     	        	         click:function(){
+	     	        	        	$('#redeemdialog').dialog('close');
+	     	        	         }
+	     	                   },
+	             			  ],
+	    		 
+	    	 })
+	     	$(".ui-dialog-titlebar").css("background-color", "#61cc61");
+         	$(".ui-dialog-title").css("color", "white");
+         	$(".ui-dialog").css("position", "center");
+			
+		}else if(document.getElementById("<portlet:namespace/>accountid").options.length==0){
+	    	 $('#redeemdialog').dialog({
+	    		    title:'message',
+	    		    modal: true,
+	     	        width: screenWidth,
+	     	        height:'auto',
+	     	        resizable:false,
+	     	        position: { my: "center", at: "center", of: window },
+	     	        open: function(){
+		     	    	  $('#exceeddetil').html('<p><strong><liferay-ui:message key="noaccount"/></strong></p>')
+		     	       },
+	     	        buttons: [ {
+	     	        	         text:'<liferay-ui:message key="confirm"/>',
+	     	        	         click:function(){
+	     	        	        	$('#redeemdialog').dialog('close');
+	     	        	         }
+	     	                   },
+	             			  ],
+	    		 
+	    	 })
+	     	$(".ui-dialog-titlebar").css("background-color", "#61cc61");
+         	$(".ui-dialog-title").css("color", "white");
+         	$(".ui-dialog").css("position", "center");
+		}
+		else{
+			var toaccountid = accountid.get('options').item(accountid.get('selectedIndex')).get('value'); 
+			//var toaccountid = accounts[accountnames.indexOf(name)];
+			if(usd>totalvalue){
+			if($(window).width()>600){
+	        	  var screenWidth = '500px';
+	          }else{
+	        	  var screenWidth = $(window).width()-30+'px';
+	          }
+	    	 $('#redeemdialog').dialog({
+	    		    title:'<liferay-ui:message key="message"/>',
+	    		    modal: true,
+	     	        width: screenWidth,
+	     	        height:'auto',
+	     	        resizable:false,
+	     	        position: { my: "center", at: "center", of: window },
+	     	        open: function(){
+		     	    	  $('#exceeddetil').html('<p><strong><liferay-ui:message key="Thevalueexceedyourtotalavailablevalue"/></strong></p>')
+		     	       },
+	     	        buttons: [ {
+	     	        	         text:'<liferay-ui:message key="confirm"/>',
+	     	        	         click:function(){
+	     	        	        	$('#redeemdialog').dialog('close');
+	     	        	         }
+	     	                   },
+	             			  ],
+	    		 
+	    	 })
+	     	$(".ui-dialog-titlebar").css("background-color", "#61cc61");
+         	$(".ui-dialog-title").css("color", "white");
+         	$(".ui-dialog").css("position", "center");
+		}else{
+		if(tocurrency=="USD"){
+			Liferay.Service(
+					  '/LmCurrencyConverter-portlet.fxrate/calculate',
+					  {
+					    source: 'USD',
+					    target: 'USD',
+					    sendAmount: 0,
+					    receivedAmount: 0,
+					    serviceTypeCd: 'ServiceType_101',
+					    userDefineRate: 0,
+					    localeCd: 'zh_CN'
+					  },
+					  function(obj) {
+						  var sign = obj.data.lmData.sign;
+			Liferay.Service(
+					  '/LmAgentPoint-portlet.userpoint/redeem',
+					  {
+					    userId: <%=userId %>,
+					    amount: parseInt($('#baseUSD').val()),
+					    baseValueAmount: usd,
+					    toCurrency: 'USD',
+					    toCurrencyAmount: usd,
+					    toAccountId: toaccountid,
+					    lmRate:1,
+					    sign:sign,
+					    localeCd:'<%=langId %>'
+					  },
+					  function(obj) {
+					    //console.log(obj);
+					    if('<%=langId %>' =='zh_CN'){
+					    	//console.log('chinese!');
+			        		$('#redeemmessage').dialog({
+			        			title: '<liferay-ui:message key="message"/>',
+			        	        modal: true,
+			        	        width: screenWidth,
+			        	        height:'auto',
+			        	        resizable:false,
+			        	        position: { my: "center", at: "center", of: window },
+			         	        open: function(){
+			         	        	var message = obj.value.msg_cn;
+			         	        	//console.log(message);
+			  	     	    	  $('#redeemmessagdetail').html('<p>'+message+'</p>');
+			  	     	    	  //get new data
+			  	     	   	Liferay.Service(
+			  	    			  '/LmAgentPoint-portlet.userpoint/get-summary',
+			  	    			  {
+			  	    			    userId: <%=userId %>,
+			  	    			    localeCd:'<%=langId %>'
+			  	    			  },
+			  	    			  function(obj) {
+			  	    				  /* document.getElementsById('<%=namespace%>total_cashable_points').innerHTML = obj.value.totalAvailable; */
+			  	    				  //console.log(obj.value);
+			  	    				  totalvalue = obj.value.totalAvailableValue;
+			  	    				  ratetousd = obj.value.pointToUsd;
+			  	    				  document.getElementById('tav').innerHTML=obj.value.totalAvailableValue;
+			  	    				  document.getElementById('tap').innerHTML=obj.value.totalAvailable;
+			  	    				  document.getElementById('tpv').innerHTML=obj.value.totalPendingRedemptionValue;
+			  	    				  document.getElementById('tpp').innerHTML=obj.value.totalPendingRedemption;
+			  	    				  document.getElementById('trv').innerHTML=obj.value.totalRedeemedValue;
+			  	    				  document.getElementById('trp').innerHTML=obj.value.totalRedeemed;
+			  	    				  document.getElementById('tev').innerHTML=obj.value.totalEarnedValue;
+			  	    				  document.getElementById('tep').innerHTML=obj.value.totalEarned;
+			  	    				  document.getElementById('tv').innerHTML=obj.value.totalAvailable;
+			  	    			  }
+			  	    			);
+			  	     		Liferay.Service(
+			  	    			  '/LmAgentPoint-portlet.userpoint/get-redemption-history',
+			  	    			  {
+			  	    			    userId: <%=userId %>,
+			  	    			    localeCd:'<%=langId %>'
+			  	    			  },
+			  	    			  function(obj) {
+			  	    				  //console.log(obj);
+			  	    				  var data = [];
+			  	    				  var datajson = [];			    	
+			  	    			    	for(var i=0;i<obj.value.redemptions.length;i++){
+			  	    			    		var tem = getpointsInfor(obj.value.redemptions[i]);
+			  	    			    		datajson.push(tem);
+			  	    			    	
+			  	    			    }
+			  	    			    	//console.log(datajson);
+			  	    			       for(var i=0;i<datajson.length;i++){
+			  	    			        	 var arr3 = Object.keys(datajson[i]).map(function (key) { return datajson[i][key]; });
+			  	    			        	 data.push(arr3);
+			  	    			         }
+			  	    			       for(var i=0;i<data.length;i++){
+			  	    			    	   /* var strDateTime = data[i][0];
+					  	    			   var myDate = new Date(strDateTime);
+					  	    			   data[i][0]=myDate.toLocaleString(); */
+					  	    			   if(<%=is_zh_CN%>){
+					  	    				   if(data[i][6]=='canceled'){
+					  	    				      data[i][6]='已取消';
+					  	    				   }else if(data[i][6]=='pending'){
+					  	    					 data[i][6]='处理中';
+					  	    				   }else{
+					  	    					 data[i][6]='已完成';
+					  	    				   }
+					  	    			   }
+					  	    			  if(<%=is_zh_TW%>){
+
+						  	    				if(data[i][6]=='canceled'){
+						  	    				data[i][6]='已取消';
+						  	    				}else if(data[i][6]=='pending'){
+						  	    				data[i][6]='處理中';
+						  	    				}else{
+						  	    				data[i][6]='已完成';
+						  	    				}
+						  	    			   }
+					  	    			   if(<%=is_ja_JP%>){
+					  	    				   if(data[i][6]=='canceled'){
+					  	    				      data[i][6]='キャンセル済み';
+					  	    				   }else if(data[i][6]=='pending'){
+					  	    					 data[i][6]='処理中';
+					  	    				   }else{
+					  	    					 data[i][6]='完成済';
+					  	    				   }
+					  	    			   }
+			  	    			       }
+			  	    		
+			  	    			       //console.log(data);
+			  	    			       if(data.length==0){
+			  	    			    	   
+			  	    			       }else{
+			  	    			    	   for(var i=0;i<data.length;i++){
+			  	    			    		   //console.log(data[i][0]);
+			  	    			    	   }
+			  	    			    	 statusdata = data;
+			  	    			    	   //generatetable(data);
+			  	    			       }
+			  	    			       }	
+			  	    			);
+			  	     	       },
+			  	     	    buttons: [
+			  	     	              {
+			  	     	            	  text:'<liferay-ui:message key="confirm"/>',
+			  	     	            	  click:function(){
+			  	     	            		$('#redeemmessage').dialog('close')
+			  	     	            	  }
+			  	     	              }
+			  	     	              ]
+			        		})
+					    }else{
+					    	//console.log('English!');
+			        		$('#redeemmessage').dialog({
+			        			title: '<liferay-ui:message key="message"/>',
+			        	        modal: true,
+			        	        width: screenWidth,
+			        	        height:'auto',
+			        	        resizable:false,
+			        	        position: { my: "center", at: "center", of: window },
+			         	        open: function(){
+			         	        	var message = obj.value.msg_en;
+			         	        	//console.log(message);
+			  	     	    	  $('#redeemmessagdetail').html('<p>'+message+'</p>');
+			  	     	    	  //get new data
+			  	     	   	Liferay.Service(
+			  	    			  '/LmAgentPoint-portlet.userpoint/get-summary',
+			  	    			  {
+			  	    			    userId: <%=userId %>,
+			  	    			    localeCd:'<%=langId %>'
+			  	    			  },
+			  	    			  function(obj) {
+			  	    				  /* document.getElementsById('<%=namespace%>total_cashable_points').innerHTML = obj.value.totalAvailable; */
+			  	    				  //console.log(obj.value);
+			  	    				  totalvalue = obj.value.totalAvailableValue;
+			  	    				  ratetousd = obj.value.pointToUsd;
+			  	    				  document.getElementById('tav').innerHTML=obj.value.totalAvailableValue;
+			  	    				  document.getElementById('tap').innerHTML=obj.value.totalAvailable;
+			  	    				  document.getElementById('tpv').innerHTML=obj.value.totalPendingRedemptionValue;
+			  	    				  document.getElementById('tpp').innerHTML=obj.value.totalPendingRedemption;
+			  	    				  document.getElementById('trv').innerHTML=obj.value.totalRedeemedValue;
+			  	    				  document.getElementById('trp').innerHTML=obj.value.totalRedeemed;
+			  	    				  document.getElementById('tev').innerHTML=obj.value.totalEarnedValue;
+			  	    				  document.getElementById('tep').innerHTML=obj.value.totalEarned;
+			  	    				  document.getElementById('tv').innerHTML=obj.value.totalAvailable;
+			  	    			  }
+			  	    			);
+			  	     		Liferay.Service(
+			  	    			  '/LmAgentPoint-portlet.userpoint/get-redemption-history',
+			  	    			  {
+			  	    			    userId: <%=userId %>,
+			  	    			    localeCd:'<%=langId %>'
+			  	    			  },
+			  	    			  function(obj) {
+			  	    				  //console.log(obj);
+			  	    				  var data = [];
+			  	    				  var datajson = [];			    	
+			  	    			    	for(var i=0;i<obj.value.redemptions.length;i++){
+			  	    			    		var tem = getpointsInfor(obj.value.redemptions[i]);
+			  	    			    		datajson.push(tem);
+			  	    			    	
+			  	    			    }
+			  	    			    	//console.log(datajson);
+			  	    			       for(var i=0;i<datajson.length;i++){
+			  	    			        	 var arr3 = Object.keys(datajson[i]).map(function (key) { return datajson[i][key]; });
+			  	    			        	 data.push(arr3);
+			  	    			         }
+			  	    			       for(var i=0;i<data.length;i++){
+			  	    			    	 /*   var strDateTime = data[i][0];
+					  	    			   var myDate = new Date(strDateTime);
+					  	    			   data[i][0]=myDate.toLocaleString(); */
+					  	    			   if(<%=is_zh_CN%>){
+					  	    				   if(data[i][6]=='canceled'){
+					  	    				      data[i][6]='已取消';
+					  	    				   }else if(data[i][6]=='pending'){
+					  	    					 data[i][6]='处理中';
+					  	    				   }else{
+					  	    					 data[i][6]='已完成';
+					  	    				   }
+					  	    			   }
+					  	    			  if(<%=is_zh_TW%>){
+
+						  	    				if(data[i][6]=='canceled'){
+						  	    				data[i][6]='已取消';
+						  	    				}else if(data[i][6]=='pending'){
+						  	    				data[i][6]='處理中';
+						  	    				}else{
+						  	    				data[i][6]='已完成';
+						  	    				}
+						  	    			   }
+					  	    			   if(<%=is_ja_JP%>){
+					  	    				   if(data[i][6]=='canceled'){
+					  	    				      data[i][6]='キャンセル済み';
+					  	    				   }else if(data[i][6]=='pending'){
+					  	    					 data[i][6]='処理中';
+					  	    				   }else{
+					  	    					 data[i][6]='完成済';
+					  	    				   }
+					  	    			   }
+			  	    			       }
+			  	    			   
+			  	    			       //console.log(data);
+			  	    			       if(data.length==0){
+			  	    			    	   
+			  	    			       }else{
+			  	    			    	   statusdata = data;
+			  	    			    	   //generatetable(data);
+			  	    			    	   //console.log('statusdata'+statusdata);
+			  	    			       }
+			  	    			       }	
+			  	    			);
+			  	     	       },
+			  	     	    buttons: [
+			  	     	              {
+			  	     	            	  text:'<liferay-ui:message key="confirm"/>',
+			  	     	            	  click:function(){
+			  	     	            		$('#redeemmessage').dialog('close')
+			  	     	            	  }
+			  	     	              }
+			  	     	              ]
+			        		})
+			        		
+					    }
+					    //location.reload();
+					    $(".ui-dialog-titlebar").css("background-color", "#61cc61");
+		            	$(".ui-dialog-title").css("color", "white");
+		            	$(".ui-dialog").css("position", "center");
+					  }
+					);
+					  })
+		}else{
+		Liferay.Service(
+				  '/LmCurrencyConverter-portlet.fxrate/calculate',
+				  {
+				    source: 'USD',
+				    target: tocurrency,
+				    sendAmount: 0,
+				    receivedAmount: 0,
+				    serviceTypeCd: 'ServiceType_101',
+				    userDefineRate: 0,
+				    localeCd: 'zh_CN'
+				  },
+				  function(obj) {
+					  //console.log(obj);
+				    var rate = obj.data.lmData.linemoneyRate;
+				    var sign = obj.data.lmData.sign;
+				    var toamount = Math.floor(rate*usd*100)/100;
+					Liferay.Service(
+							  '/LmAgentPoint-portlet.userpoint/redeem',
+							  {
+							    userId: <%=userId %>,
+							    amount: parseInt($('#baseUSD').val()),
+							    baseValueAmount: usd,
+							    toCurrency: tocurrency,
+							    toCurrencyAmount: toamount,
+							    toAccountId: toaccountid,
+							    lmRate:rate,
+							    sign:sign,
+							    localeCd:'<%=langId %>'
+
+							  },
+							  function(obj) {
+							    //console.log(obj);
+							    if('<%=langId %>' =='zh_CN'){
+							    	//console.log('chinese!');
+					        		$('#redeemmessage').dialog({
+					        			title: 'message',
+					        	        modal: true,
+					        	        width: screenWidth,
+					        	        height:'auto',
+					        	        resizable:false,
+					        	        position: { my: "center", at: "center", of: window },
+					         	        open: function(){
+					         	        	var message = obj.value.msg_cn;
+					         	        	//console.log(message);
+					  	     	    	  $('#redeemmessagdetail').html('<p>'+message+'</p>');
+					  	     	    	  //get new data
+					  	     	   	Liferay.Service(
+					  	    			  '/LmAgentPoint-portlet.userpoint/get-summary',
+					  	    			  {
+					  	    			    userId: <%=userId %>,
+					  	    			    localeCd:'<%=langId %>'
+					  	    			  },
+					  	    			  function(obj) {
+					  	    				  /* document.getElementsById('<%=namespace%>total_cashable_points').innerHTML = obj.value.totalAvailable; */
+					  	    				  //console.log(obj.value);
+					  	    				  totalvalue = obj.value.totalAvailableValue;
+					  	    				  ratetousd = obj.value.pointToUsd;
+					  	    				  document.getElementById('tav').innerHTML=obj.value.totalAvailableValue;
+					  	    				  document.getElementById('tap').innerHTML=obj.value.totalAvailable;
+					  	    				  document.getElementById('tpv').innerHTML=obj.value.totalPendingRedemptionValue;
+					  	    				  document.getElementById('tpp').innerHTML=obj.value.totalPendingRedemption;
+					  	    				  document.getElementById('trv').innerHTML=obj.value.totalRedeemedValue;
+					  	    				  document.getElementById('trp').innerHTML=obj.value.totalRedeemed;
+					  	    				  document.getElementById('tev').innerHTML=obj.value.totalEarnedValue;
+					  	    				  document.getElementById('tep').innerHTML=obj.value.totalEarned;
+					  	    				  document.getElementById('tv').innerHTML=obj.value.totalAvailable;
+					  	    			  }
+					  	    			);
+					  	     		Liferay.Service(
+					  	    			  '/LmAgentPoint-portlet.userpoint/get-redemption-history',
+					  	    			  {
+					  	    			    userId: <%=userId %>,
+					  	    			    localeCd:'<%=langId %>'
+					  	    			  },
+					  	    			  function(obj) {
+					  	    				  //console.log(obj);
+					  	    				  var data = [];
+					  	    				  //statusdata = []
+					  	    				  var datajson = [];			    	
+					  	    			    	for(var i=0;i<obj.value.redemptions.length;i++){
+					  	    			    		var tem = getpointsInfor(obj.value.redemptions[i]);
+					  	    			    		datajson.push(tem);
+					  	    			    	
+					  	    			    }
+					  	    			    	//console.log(datajson);
+					  	    			       for(var i=0;i<datajson.length;i++){
+					  	    			        	 var arr3 = Object.keys(datajson[i]).map(function (key) { return datajson[i][key]; });
+					  	    			        	 data.push(arr3);
+					  	    			         }
+					  	    			       for(var i=0;i<data.length;i++){
+					  	    			    	/*    var strDateTime = data[i][0];
+							  	    			   var myDate = new Date(strDateTime);
+							  	    			   data[i][0]=myDate.toLocaleString(); */
+							  	    			   if(<%=is_zh_CN%>){
+							  	    				   if(data[i][6]=='canceled'){
+							  	    				      data[i][6]='已取消';
+							  	    				   }else if(data[i][6]=='pending'){
+							  	    					 data[i][6]='处理中';
+							  	    				   }else{
+							  	    					 data[i][6]='已完成';
+							  	    				   }
+							  	    			   }
+							  	    			  if(<%=is_zh_TW%>){
+
+  							  	    				if(data[i][6]=='canceled'){
+  							  	    				data[i][6]='已取消';
+  							  	    				}else if(data[i][6]=='pending'){
+  							  	    				data[i][6]='處理中';
+  							  	    				}else{
+  							  	    				data[i][6]='已完成';
+  							  	    				}
+  							  	    			   }
+							  	    			   if(<%=is_ja_JP%>){
+							  	    				   if(data[i][6]=='canceled'){
+							  	    				      data[i][6]='キャンセル済み';
+							  	    				   }else if(data[i][6]=='pending'){
+							  	    					 data[i][6]='処理中';
+							  	    				   }else{
+							  	    					 data[i][6]='完成済';
+							  	    				   }
+							  	    			   }
+					  	    			       }
+					  	    			       //console.log(data);
+					  	    			       if(data.length==0){
+					  	    			    	   
+					  	    			       }else{
+					  	    			    	 statusdata = data;
+					  	    			    	   //generatetable(data);
+					  	    			       }
+					  	    			       }	
+					  	    			);
+					  	     	       },
+					  	     	    buttons: [
+					  	     	              {
+					  	     	            	  text:'<liferay-ui:message key="confirm"/>',
+					  	     	            	  click:function(){
+					  	     	            		$('#redeemmessage').dialog('close')
+					  	     	            	  }
+					  	     	              }
+					  	     	              ]
+					        		})
+					        		$(".ui-dialog-titlebar").css("background-color", "#61cc61");
+			                     	$(".ui-dialog-title").css("color", "white");
+			                     	$(".ui-dialog").css("position", "center");
+							    }else{
+							    	//console.log('English!');
+					        		$('#redeemmessage').dialog({
+					        			title: '<liferay-ui:message key="message"/>',
+					        	        modal: true,
+					        	        width: screenWidth,
+					        	        height:'auto',
+					        	        resizable:false,
+					        	        position: { my: "center", at: "center", of: window },
+					         	        open: function(){
+					         	        	var message = obj.value.msg_en;
+					         	        	//console.log(message);
+					  	     	    	  $('#redeemmessagdetail').html('<p>'+message+'</p>');
+					  	     	    	  //get new data
+					  	     	   	Liferay.Service(
+					  	    			  '/LmAgentPoint-portlet.userpoint/get-summary',
+					  	    			  {
+					  	    			    userId: <%=userId %>,
+					  	    			    localeCd:'<%=langId %>'
+					  	    			  },
+					  	    			  function(obj) {
+					  	    				  /* document.getElementsById('<%=namespace%>total_cashable_points').innerHTML = obj.value.totalAvailable; */
+					  	    				  //console.log(obj.value);
+					  	    				  totalvalue = obj.value.totalAvailableValue;
+					  	    				  ratetousd = obj.value.pointToUsd;
+					  	    				  document.getElementById('tav').innerHTML=obj.value.totalAvailableValue;
+					  	    				  document.getElementById('tap').innerHTML=obj.value.totalAvailable;
+					  	    				  document.getElementById('tpv').innerHTML=obj.value.totalPendingRedemptionValue;
+					  	    				  document.getElementById('tpp').innerHTML=obj.value.totalPendingRedemption;
+					  	    				  document.getElementById('trv').innerHTML=obj.value.totalRedeemedValue;
+					  	    				  document.getElementById('trp').innerHTML=obj.value.totalRedeemed;
+					  	    				  document.getElementById('tev').innerHTML=obj.value.totalEarnedValue;
+					  	    				  document.getElementById('tep').innerHTML=obj.value.totalEarned;
+					  	    				  document.getElementById('tv').innerHTML=obj.value.totalAvailable;
+					  	    			  }
+					  	    			);
+					  	     		Liferay.Service(
+					  	    			  '/LmAgentPoint-portlet.userpoint/get-redemption-history',
+					  	    			  {
+					  	    			    userId: <%=userId %>,
+					  	    			    localeCd:'<%=langId %>'
+					  	    			  },
+					  	    			  function(obj) {
+					  	    				  //console.log(obj);
+					  	    				  var data = [];
+					  	    				  var datajson = [];			    	
+					  	    			    	for(var i=0;i<obj.value.redemptions.length;i++){
+					  	    			    		var tem = getpointsInfor(obj.value.redemptions[i]);
+					  	    			    		datajson.push(tem);
+					  	    			    	
+					  	    			    }
+					  	    			    	//console.log(datajson);
+					  	    			       for(var i=0;i<datajson.length;i++){
+					  	    			        	 var arr3 = Object.keys(datajson[i]).map(function (key) { return datajson[i][key]; });
+					  	    			        	 data.push(arr3);
+					  	    			         }
+					  	    			       for(var i=0;i<data.length;i++){
+					  	    			   /*  	   var strDateTime = data[i][0];
+							  	    			   var myDate = new Date(strDateTime);
+							  	    			   data[i][0]=myDate.toLocaleString(); */
+							  	    			   if(<%=is_zh_CN%>){
+							  	    				   if(data[i][6]=='canceled'){
+							  	    				      data[i][6]='已取消';
+							  	    				   }else if(data[i][6]=='pending'){
+							  	    					 data[i][6]='处理中';
+							  	    				   }else{
+							  	    					 data[i][6]='已完成';
+							  	    				   }
+							  	    			   }
+							  	    			  if(<%=is_zh_TW%>){
+
+  							  	    				if(data[i][6]=='canceled'){
+  							  	    				data[i][6]='已取消';
+  							  	    				}else if(data[i][6]=='pending'){
+  							  	    				data[i][6]='處理中';
+  							  	    				}else{
+  							  	    				data[i][6]='已完成';
+  							  	    				}
+  							  	    			   }
+							  	    			   if(<%=is_ja_JP%>){
+							  	    				   if(data[i][6]=='canceled'){
+							  	    				      data[i][6]='キャンセル済み';
+							  	    				   }else if(data[i][6]=='pending'){
+							  	    					 data[i][6]='処理中';
+							  	    				   }else{
+							  	    					 data[i][6]='完成済';
+							  	    				   }
+							  	    			   }
+					  	    			       }
+					  	    			       //console.log(data);
+					  	    			       if(data.length==0){
+					  	    			    	   
+					  	    			       }else{
+					  	    			    	 statusdata = data;
+					  	    			    	   //generatetable(data);
+					  	    			       }
+					  	    			       }	
+					  	    			);
+					  	     	       },
+					  	     	    buttons: [
+					  	     	              {
+					  	     	            	  text:'<liferay-ui:message key="confirm"/>',
+					  	     	            	  click:function(){
+					  	     	            		$('#redeemmessage').dialog('close')
+					  	     	            	  }
+					  	     	              }
+					  	     	              ]
+					        		})
+					        		$(".ui-dialog-titlebar").css("background-color", "#61cc61");
+			                     	$(".ui-dialog-title").css("color", "white");
+			                     	$(".ui-dialog").css("position", "center");
+							    }	
+						  		$(".ui-dialog-titlebar").css("background-color", "#61cc61");
+				            	$(".ui-dialog-title").css("color", "white");
+				            	$(".ui-dialog").css("position", "center");
+							  }
+							);
+				    
+				  }
+				);
+		}
+		
+	}
+	}
+	})
+
+}
+
+    function generatetable(dataSet){
+    	var offset = new Date().getTimezoneOffset();
+    	//console.log(dataSet[0][0].setMinutes(dataSet[0][0].getMinutes() - offset));
+    	//console.log(dataSet);
+    	//var date = new Date(dataSet[0][0]);
+    	//date.toString('yyyy-MM-dd HH:mm:ss z');
+    	// console.log(date.toString('yyyy-MM-dd HH:mm:ss z'));
+    	 /*for(var i=0;i<dataSet.length;i++){
+    		var date = new Date(dataSet[i][0]);
+    		console.log(date);
+    		dataSet[i][0]=date;
+    	} */
+     	if ( $.fn.DataTable.isDataTable('#statusrecord') ) {
+  		  $('#statusrecord').DataTable().destroy();
+  		  
+		    	//console.log(dataSet);
+  		}
+   	 //console.log(dataSet);
+   	 if(dataSet.length==0){
+   		 //console.log('true');
+   		 $('.noneres').css('display','block');
+   		$('#statusrecord_wrapper').hide();
+   	 }else{
+   		 $('#statusrecord').show();
+   		$('.noneres').css('display','none');
+   	 }
+   	 var index;
+
+           var table = $('#statusrecord').DataTable({
+            // rowReorder: {
+            //     selector: 'td:nth-child(2)'
+            //     // selector:'tr'
+            // },
+            "order": [[ 0, "desc" ]],
+    	"iDisplayLength": 25,
+   "responsive": true, 
+		        //scrollY: 600,
+            //"autoWidth": true,
+            destory:true,
+            "data":dataSet,
+            "oLanguage" : {
+                "sLengthMenu": "<liferay-ui:message key='LengthMenu'/>",
+                "sZeroRecords": "<liferay-ui:message key='ZeroRecords'/>",
+                "sInfo": "<liferay-ui:message key='Info'/>",
+                "sInfoEmpty": "<liferay-ui:message key='InfoEmpty'/>",
+                "sInfoFiltered": "<liferay-ui:message key='InfoFiltered'/>",
+                 "sSearch": "<liferay-ui:message key='Search'/>",
+                "oPaginate": {
+                "sFirst": "<liferay-ui:message key='First'/>",
+                "sPrevious": "<liferay-ui:message key='Previous'/>",
+                "sNext": "<liferay-ui:message key='Next'/>",
+                "sLast": "<liferay-ui:message key='Last'/>"
+                }
+                },
+            "columnDefs": [ {
+                "targets": -1,
+                "data": null,
+                // "defaultContent": "<button>click</button>"
+                //"defaultContent": "<div><a href='#' class='view'>"+'<liferay-ui:message key="operate"/>'+"</a></div>"
+              }
+            ,{
+                "targets": [7],
+                "visible": false,
+                "searchable": false
+            } 
+            ,{
+                "targets": [8],
+                "visible": false,
+                "searchable": false
+            } 
+               ]
+        } );
+        
+        // Set View Details Link
+        $('#statusrecord tbody').off( 'click.rowClick' ).on( 'click.rowClick', '.view', function () {
+            var newindex=table.row($(this).closest('tr')).index();
+            if(newindex==undefined){
+           	 newindex=table.row($(this).closest('tr').prev()).index();
+            }
+            
+            window.index=newindex;
+            //console.log(window.index);
+            var data=dataSet[window.index];
+            //console.log(data);
+     	      if($(window).width()>600){
+           	  var screenWidth = '500px';
+             }else{
+           	  var screenWidth = $(window).width()-30+'px';
+             }
+     	    //event.preventDefault();
+            	$('#statusdialog').dialog({
+    	        title: '<liferay-ui:message key="message"/>',
+    	        modal: true,
+    	        width: screenWidth,
+    	        height:'auto',
+    	        resizable:false,
+    	        position: { my: "center", at: "center", of: window },
+     	        open: function(){
+	     	    	  $('#statusdetail').html('<div class="detailtableee"><table>\
+	     	    			<tr><td>'+'<liferay-ui:message key="date"/>'+':</td><td>'+data[0]+'</td></tr>\
+       	                   <tr><td>'+'<liferay-ui:message key="Accountname"/>'+':</td><td>'+data[1]+'</td></tr>\
+       	                   <tr><td>'+'<liferay-ui:message key="toCurrencyAmount"/>'+':</td><td>'+data[2]+'</td></tr>\
+       	                   <tr><td>'+'<liferay-ui:message key="toCurrency"/>'+':</td><td>'+data[3]+'</td></tr>\
+       	                   <tr><td>'+'<liferay-ui:message key="points"/>'+':</td><td>'+data[4]+'</td></tr>\
+       	                   </table></div>')
+	     	       },
+    	        buttons: [
+    	    			    {
+    	    			        text: '<liferay-ui:message key="resubmit"/>',
+    	    			        click: function() { 
+    	    			        	if(data[5]!='pending' && data[5]!='处理中' && data[5]!='処理中'){
+    	    			        		$('#statusdialog').dialog('close');
+    	    			        		$('#returnmessage').dialog({
+    	    			        			title: 'message',
+    	    			        	        modal: true,
+    	    			        	        width: screenWidth,
+    	    			        	        height:'auto',
+    	    			        	        resizable:false,
+    	    			        	        position: { my: "center", at: "center", of: window },
+    	    			         	        open: function(){
+    	    			  	     	    	  $('#returnmessagedetail').html('<p><liferay-ui:message key="Becauseyouhavecompleted(cancelled)thistransactionyoucannotresubmit"/></p>')
+    	    			  	     	       },
+    	    			  	     	    buttons: [
+    	    			  	     	              {
+    	    			  	     	            	  text:'<liferay-ui:message key="confirm"/>',
+    	    			  	     	            	  click:function(){
+    	    			  	     	            		$('#returnmessage').dialog('close')
+    	    			  	     	            	  }
+    	    			  	     	              }
+    	    			  	     	              ]
+    	    			        		})
+    	    			        		$(".ui-dialog-titlebar").css("background-color", "#61cc61");
+    	    	                     	$(".ui-dialog-title").css("color", "white");
+    	    	                     	$(".ui-dialog").css("position", "center");
+    	    			        	}
+    	    			        	else{
+    	    			        	Liferay.Service(
+    	    			        			  '/LmAgentPoint-portlet.userpoint/resubmit-redemption',
+    	    			        			  {
+    	    			        				  redemptionId: data[6],
+    	    			        				  userId: <%=userId %>,
+    	    			        				  localeCd:'<%=langId %>'
+    	    			        			       
+    	    			        			  },
+    	    			        			  function(obj) {
+    	    			        	            //console.log(obj);
+    	    			        	            $('#statusdialog').dialog('close');
+    	    					        		$('#returnmessage').dialog({
+    	    	    			        			title: 'message',
+    	    	    			        	        modal: true,
+    	    	    			        	        width: screenWidth,
+    	    	    			        	        height:'auto',
+    	    	    			        	        resizable:false,
+    	    	    			        	        position: { my: "center", at: "center", of: window },
+    	    	    			         	        open: function(){
+    	    	    			  	     	    	  $('#returnmessagedetail').html('<p><liferay-ui:message key="resubmitted"/></p>')
+    	    	    			  	     	       },
+    	    	    			  	     	    buttons: [
+    	    	    			  	     	              {
+    	    	    			  	     	            	  text:'<liferay-ui:message key="confirm"/>',
+    	    	    			  	     	            	  click:function(){
+    	    	    			  	     	            		$('#returnmessage').dialog('close');
+    	    	    			  	     	            		Liferay.Service(
+    	    	    			  	     	           			  '/LmAgentPoint-portlet.userpoint/get-redemption-history',
+    	    	    			  	     	           			  {
+    	    	    			  	     	           			    userId: <%=userId %>,
+    	    	    			  	     	           			    localeCd:'<%=langId %>'
+    	    	    			  	     	           			  },
+    	    	    			  	     	           			  function(obj) {
+    	    	    			  	     	           				  
+    	    	    			  	     	           				  //console.log(obj);
+    	    	    			  	     	           				  var data = [];
+    	    	    			  	     	           				  var datajson = [];			    	
+    	    	    			  	     	           			    	for(var i=0;i<obj.value.redemptions.length;i++){
+    	    	    			  	     	           			    		var tem = getpointsInfor(obj.value.redemptions[i]);
+    	    	    			  	     	           			    		datajson.push(tem);
+    	    	    			  	     	           			    	
+    	    	    			  	     	           			    }
+    	    	    			  	     	           			    	//console.log(datajson);
+    	    	    			  	     	           			       for(var i=0;i<datajson.length;i++){
+    	    	    			  	     	           			        	 var arr3 = Object.keys(datajson[i]).map(function (key) { return datajson[i][key]; });
+    	    	    			  	     	           			        	 data.push(arr3);
+    	    	    			  	     	           			         }
+    	    	    			  	     	           		       for(var i=0;i<data.length;i++){
+    	    	    					  	    			    	/*    var strDateTime = data[i][0];
+    	    	    							  	    			   var myDate = new Date(strDateTime);
+    	    	    							  	    			   data[i][0]=myDate.toLocaleString(); */
+    	    	    							  	    			   if(<%=is_zh_CN%>){
+    	    	    							  	    				   if(data[i][6]=='canceled'){
+    	    	    							  	    				      data[i][6]='已取消';
+    	    	    							  	    				   }else if(data[i][6]=='pending'){
+    	    	    							  	    					 data[i][6]='处理中';
+    	    	    							  	    				   }else{
+    	    	    							  	    					 data[i][6]='已完成';
+    	    	    							  	    				   }
+    	    	    							  	    			   }
+    	    	    							  	    			  if(<%=is_zh_TW%>){
+
+    		    	    							  	    				if(data[i][6]=='canceled'){
+    		    	    							  	    				data[i][6]='已取消';
+    		    	    							  	    				}else if(data[i][6]=='pending'){
+    		    	    							  	    				data[i][6]='處理中';
+    		    	    							  	    				}else{
+    		    	    							  	    				data[i][6]='已完成';
+    		    	    							  	    				}
+    		    	    							  	    			   }
+    	    	    							  	    			   if(<%=is_ja_JP%>){
+    	    	    							  	    				   if(data[i][6]=='canceled'){
+    	    	    							  	    				      data[i][6]='キャンセル済み';
+    	    	    							  	    				   }else if(data[i][6]=='pending'){
+    	    	    							  	    					 data[i][6]='処理中';
+    	    	    							  	    				   }else{
+    	    	    							  	    					 data[i][6]='完成済';
+    	    	    							  	    				   }
+    	    	    							  	    			   }
+    	    	    					  	    			       }
+    	    	    			  	     	           			       //console.log(data);
+    	    	    			  	     	           			       if(data.length==0){
+    	    	    			  	     	           			    	   
+    	    	    			  	     	           			       }else{
+    	    	    			  	     	           			    	statusdata = data;
+    	    	    			  	     	           			    	   generatetable(data);
+    	    	    			  	     	           			       }
+    	    	    			  	     	           			       }	
+    	    	    			  	     	           			);
+    	    	    			  	     	            	  }
+    	    	    			  	     	              }
+    	    	    			  	     	              ]
+    	    	    			        		})
+    	    	    			        		$(".ui-dialog-titlebar").css("background-color", "#61cc61");
+    	    			                     	$(".ui-dialog-title").css("color", "white");
+    	    			                     	$(".ui-dialog").css("position", "center");
+    	    			        			  }
+    	    			        			);
+    	    			        	}
+    	    			        	$(".ui-dialog-titlebar").css("background-color", "#61cc61");
+					            	$(".ui-dialog-title").css("color", "white");
+					            	$(".ui-dialog").css("position", "center");
+    	    			        }
+    	    			    },
+    			    {
+    			        text: '<liferay-ui:message key="cancelorder"/>',
+    			        click: function() { 
+    			        	if(data[5]!='pending' && data[5]!='处理中' && data[5]!='処理中'){
+    			        		$('#statusdialog').dialog('close');
+    			        		$('#returnmessage').dialog({
+    			        			title: '<liferay-ui:message key="message"/>',
+    			        	        modal: true,
+    			        	        width: screenWidth,
+    			        	        height:'auto',
+    			        	        resizable:false,
+    			        	        position: { my: "center", at: "center", of: window },
+    			         	        open: function(){
+    			  	     	    	  $('#returnmessagedetail').html('<p><liferay-ui:message key="Becauseyouhavecompleted(cancelled)thistransactionyoucannotresubmit"/></p>')
+    			  	     	       },
+    			  	     	    buttons: [
+    			  	     	              {
+    			  	     	            	  text:'<liferay-ui:message key="confirm"/>',
+    			  	     	            	  click:function(){
+    			  	     	            		$('#returnmessage').dialog('close')
+    			  	     	            	  }
+    			  	     	              }
+    			  	     	              ]
+    			        		})
+    			        		
+    			        	}else{
+    			        	Liferay.Service(
+    			        			  '/LmAgentPoint-portlet.userpoint/cancle-redemption',
+    			        			  {
+    			        				  redemptionId: data[6],
+    			        				  userId: <%=userId %>,
+    			        				  localeCd:'<%=langId %>'
+    			        			  
+    			        			  },
+    			        			  function(obj) {
+    			        					Liferay.Service(
+    			        							  '/LmAgentPoint-portlet.userpoint/get-points-by-year-month',
+    			        							  {
+    			        									year: selectedYearValue,
+    			        								    userId: <%=userId %>,
+    			        								    month: selectedMonthValue,
+    			        								    localeCd:'<%=langId %>'
+    			        							  },
+    			        							  function(obj) {
+    			        								    //console.log(obj.value);
+    			        								    var data = [];
+    			        								 
+    			        							        	 var arr6 = Object.keys(obj.value).map(function (key) { return obj.value[key]; });
+    			        							        	 //console.log(arr6);
+    			        							        	 data.push(arr6);
+    			        							       	  document.getElementById('pm').innerHTML=obj.value.monthPoint;
+    			        									  document.getElementById('vm').innerHTML=obj.value.monthPointValue;
+    			        									  document.getElementById('yp').innerHTML=obj.value.yearToDatePoint;
+    			        									  document.getElementById('yv').innerHTML=obj.value.yearToDatePointValue;
+    			        									  document.getElementById('rp').innerHTML=obj.value.monthRedeemPoint;
+    			        									  document.getElementById('rv').innerHTML=obj.value.monthRedeemValue;
+    			        									  document.getElementById('yrp').innerHTML=obj.value.yearToDateRedeemPoint;
+    			        									  document.getElementById('yrv').innerHTML=obj.value.yearToDateRedeemValue;
+    			        								    //console.log(data);
+    			        								    //generatepoints(data);
+    			        							  }
+    			        							);
+    			        	  	     	   	Liferay.Service(
+    			  			  	    			  '/LmAgentPoint-portlet.userpoint/get-summary',
+    			  			  	    			  {
+    			  			  	    			    userId: <%=userId %>,
+    			  			  	    			    localeCd:'<%=langId %>'
+    			  			  	    			  },
+    			  			  	    			  function(obj) {
+    			  			  	    				  /* document.getElementsById('<%=namespace%>total_cashable_points').innerHTML = obj.value.totalAvailable; */
+    			  			  	    				  //console.log(obj.value);
+    			  			  	    				  totalvalue = obj.value.totalAvailableValue;
+    			  			  	    				  ratetousd = obj.value.pointToUsd;
+    			  			  	    				  document.getElementById('tav').innerHTML=obj.value.totalAvailableValue;
+    			  			  	    				  document.getElementById('tap').innerHTML=obj.value.totalAvailable;
+    			  			  	    				  document.getElementById('tpv').innerHTML=obj.value.totalPendingRedemptionValue;
+    			  			  	    				  document.getElementById('tpp').innerHTML=obj.value.totalPendingRedemption;
+    			  			  	    				  document.getElementById('trv').innerHTML=obj.value.totalRedeemedValue;
+    			  			  	    				  document.getElementById('trp').innerHTML=obj.value.totalRedeemed;
+    			  			  	    				  document.getElementById('tev').innerHTML=obj.value.totalEarnedValue;
+    			  			  	    				  document.getElementById('tep').innerHTML=obj.value.totalEarned;
+    			  			  	    				  document.getElementById('tv').innerHTML=obj.value.totalAvailable;
+    			  			  	    			  }
+    			  			  	    			);
+    			        				  //console.log(obj);
+	    			        	            $('#statusdialog').dialog('close');
+	    					        		$('#returnmessage').dialog({
+	    	    			        			title: '<liferay-ui:message key="message"/>',
+	    	    			        	        modal: true,
+	    	    			        	        width: screenWidth,
+	    	    			        	        height:'auto',
+	    	    			        	        resizable:false,
+	    	    			        	        position: { my: "center", at: "center", of: window },
+	    	    			         	        open: function(){
+	    	    			  	     	    	  $('#returnmessagedetail').html('<p><liferay-ui:message key="cancelled"/></p>')
+	    	    			  	     	       },
+	    	    			  	     	    buttons: [
+	    	    			  	     	              {
+	    	    			  	     	            	  text:'<liferay-ui:message key="confirm"/>',
+	    	    			  	     	            	  click:function(){
+	    	    			  	     	            		$('#returnmessage').dialog('close');
+	    	    			  	     	            		Liferay.Service(
+	    	    			  	     	           			  '/LmAgentPoint-portlet.userpoint/get-redemption-history',
+	    	    			  	     	           			  {
+	    	    			  	     	           			    userId: <%=userId %>,
+	    	    			  	     	           			    localeCd:'<%=langId %>'
+	    	    			  	     	           			  },
+	    	    			  	     	           			  function(obj) {
+	    	    			  	     	           			Liferay.Service(
+	    	    			  	     	   					  '/LmAgentPoint-portlet.userpoint/get-points-by-year-month',
+	    	    			  	     	   					  {
+	    	    			  	     	   							year: selectedYearValue,
+	    	    			  	     	   						    userId: <%=userId %>,
+	    	    			  	     	   						    month: selectedMonthValue,
+	    	    			  	     	   						    localeCd:'<%=langId %>'
+	    	    			  	     	   					  },
+	    	    			  	     	   					  function(obj) {
+	    	    			  	     	   						    //console.log(obj.value);
+	    	    			  	     	   						    var data = [];
+	    	    			  	     	   						 
+	    	    			  	     	   					        	 var arr6 = Object.keys(obj.value).map(function (key) { return obj.value[key]; });
+	    	    			  	     	   					        	 //console.log(arr6);
+	    	    			  	     	   					        	 data.push(arr6);
+	    	    			  	     	   					       	  document.getElementById('pm').innerHTML=obj.value.monthPoint;
+	    	    			  	     	   							  document.getElementById('vm').innerHTML=obj.value.monthPointValue;
+	    	    			  	     	   							  document.getElementById('yp').innerHTML=obj.value.yearToDatePoint;
+	    	    			  	     	   							  document.getElementById('yv').innerHTML=obj.value.yearToDatePointValue;
+	    	    			  	     	   							  document.getElementById('rp').innerHTML=obj.value.monthRedeemPoint;
+	    	    			  	     	   							  document.getElementById('rv').innerHTML=obj.value.monthRedeemValue;
+	    	    			  	     	   							  document.getElementById('yrp').innerHTML=obj.value.yearToDateRedeemPoint;
+	    	    			  	     	   							  document.getElementById('yrv').innerHTML=obj.value.yearToDateRedeemValue;
+	    	    			  	     	   						    //console.log(data);
+	    	    			  	     	   						    //generatepoints(data);
+	    	    			  	     	   					  }
+	    	    			  	     	   					);
+	    	    			  	     		  	     	   	Liferay.Service(
+	    	    			  				  	    			  '/LmAgentPoint-portlet.userpoint/get-summary',
+	    	    			  				  	    			  {
+	    	    			  				  	    			    userId: <%=userId %>,
+	    	    			  				  	    			    localeCd:'<%=langId %>'
+	    	    			  				  	    			  },
+	    	    			  				  	    			  function(obj) {
+	    	    			  				  	    				  /* document.getElementsById('<%=namespace%>total_cashable_points').innerHTML = obj.value.totalAvailable; */
+	    	    			  				  	    				  //console.log(obj.value);
+	    	    			  				  	    				  totalvalue = obj.value.totalAvailableValue;
+	    	    			  				  	    				  ratetousd = obj.value.pointToUsd;
+	    	    			  				  	    				  document.getElementById('tav').innerHTML=obj.value.totalAvailableValue;
+	    	    			  				  	    				  document.getElementById('tap').innerHTML=obj.value.totalAvailable;
+	    	    			  				  	    				  document.getElementById('tpv').innerHTML=obj.value.totalPendingRedemptionValue;
+	    	    			  				  	    				  document.getElementById('tpp').innerHTML=obj.value.totalPendingRedemption;
+	    	    			  				  	    				  document.getElementById('trv').innerHTML=obj.value.totalRedeemedValue;
+	    	    			  				  	    				  document.getElementById('trp').innerHTML=obj.value.totalRedeemed;
+	    	    			  				  	    				  document.getElementById('tev').innerHTML=obj.value.totalEarnedValue;
+	    	    			  				  	    				  document.getElementById('tep').innerHTML=obj.value.totalEarned;
+	    	    			  				  	    				  document.getElementById('tv').innerHTML=obj.value.totalAvailable;
+	    	    			  				  	    			  }
+	    	    			  				  	    			);
+	    	    			  	     	           				  //console.log(obj);
+	    	    			  	     	           				  var data = [];
+	    	    			  	     	           				  var datajson = [];			    	
+	    	    			  	     	           			    	for(var i=0;i<obj.value.redemptions.length;i++){
+	    	    			  	     	           			    		var tem = getpointsInfor(obj.value.redemptions[i]);
+	    	    			  	     	           			    		datajson.push(tem);
+	    	    			  	     	           			    	
+	    	    			  	     	           			    }
+	    	    			  	     	           			    	//console.log(datajson);
+	    	    			  	     	           			       for(var i=0;i<datajson.length;i++){
+	    	    			  	     	           			        	 var arr3 = Object.keys(datajson[i]).map(function (key) { return datajson[i][key]; });
+	    	    			  	     	           			        	 data.push(arr3);
+	    	    			  	     	           			         }
+	    	    			  	     	           		       for(var i=0;i<data.length;i++){
+	    	    					  	    			    	/*    var strDateTime = data[i][0];
+	    	    							  	    			   var myDate = new Date(strDateTime);
+	    	    							  	    			   data[i][0]=myDate.toLocaleString(); */
+	    	    							  	    			   if(<%=is_zh_CN%>){
+	    	    							  	    				   if(data[i][6]=='canceled'){
+	    	    							  	    				      data[i][6]='已取消';
+	    	    							  	    				   }else if(data[i][6]=='pending'){
+	    	    							  	    					 data[i][6]='处理中';
+	    	    							  	    				   }else{
+	    	    							  	    					 data[i][6]='已完成';
+	    	    							  	    				   }
+	    	    							  	    			   }
+	    	    							  	    			  if(<%=is_zh_TW%>){
+
+	    	    							  	    				if(data[i][6]=='canceled'){
+	    	    							  	    				data[i][6]='已取消';
+	    	    							  	    				}else if(data[i][6]=='pending'){
+	    	    							  	    				data[i][6]='處理中';
+	    	    							  	    				}else{
+	    	    							  	    				data[i][6]='已完成';
+	    	    							  	    				}
+	    	    							  	    			   }
+	    	    							  	    			   if(<%=is_ja_JP%>){
+	    	    							  	    				   if(data[i][6]=='canceled'){
+	    	    							  	    				      data[i][6]='キャンセル済み';
+	    	    							  	    				   }else if(data[i][6]=='pending'){
+	    	    							  	    					 data[i][6]='処理中';
+	    	    							  	    				   }else{
+	    	    							  	    					 data[i][6]='完成済';
+	    	    							  	    				   }
+	    	    							  	    			   }
+	    	    					  	    			       }
+	    	    			  	     	           			       //console.log(data);
+	    	    			  	     	           			       if(data.length==0){
+	    	    			  	     	           			    	   
+	    	    			  	     	           			       }else{
+	    	    			  	     	           			    	statusdata = data;
+	    	    			  	     	           			    	   generatetable(data);
+	    	    			  	     	           			       }
+	    	    			  	     	           			       }	
+	    	    			  	     	           			);
+	    	    			  	     	            	  }
+	    	    			  	     	              }
+	    	    			  	     	              ]
+	    	    			        		})
+    			        			  }
+    			        			);
+    			        }
+    			        }
+    			    }
+    			  ],
+          }); 
+            	$(".ui-dialog-titlebar").css("background-color", "#61cc61");
+            	$(".ui-dialog-title").css("color", "white");
+            	$(".ui-dialog").css("position", "center");
+        });
+   	      
+    } 
+
+
+
+
+	
+
+</aui:script>
