@@ -92,8 +92,10 @@
    <div  id="<%=namespace%>currencypart">
    <%-- <p id="<%=namespace%>p"><liferay-ui:message key="currencyselect"/></p> --%>
  <select  class='<%=namespace%>currencyselect' id="<%=namespace%>currencyselect1">
+   <option value="allcurrency"><liferay-ui:message key="Allcurrency"/></option>
   </select>
    <select id="<%=namespace%>paymentselect">
+    <option value="alltype" id='<%=namespace%>ba'><liferay-ui:message key="Allaccount"/></option>
     <option value="BankAccount" id='<%=namespace%>ba'><liferay-ui:message key="BankAccount"/></option>
     <option value="DebitCard" id='<%=namespace%>dc'><liferay-ui:message key="DebitCard"/></option>
     <option value="ThirdParty" id='<%=namespace%>tp'><liferay-ui:message key="ThirdParty"/></option>
@@ -241,6 +243,51 @@
     
         <div id="<%=namespace%>tpconfirm" style="display:none"><p><liferay-ui:message key="Areyousuretodeletethisaccount"/></p></div>
  </div>
+ 
+    <div id="<%=namespace%>all" class="detail">
+   		<div class="noneres">
+ 	                          <div class="no-icon">
+ 	                          </div>
+ 	                          <div class="no-res">
+ 	                               <p><liferay-ui:message key="myProfile.noresult"/></p>
+ 	                          </div>
+ 	    </div> 
+   		
+         <table id="<%=namespace%>allTable" class="display responsive nowrap" cellspacing="0" width="100%" style="background-color:#ededed;">
+ 		  <thead>
+ 		  <tr>
+ 	   	<th><liferay-ui:message key="accountName"/></th>
+ 	   	<th><liferay-ui:message key="accountId"/></th>
+ 	   	<th><liferay-ui:message key="currencyCd"/></th>
+ 	   	<th><liferay-ui:message key="balance"/></th>
+ 	   	<th><liferay-ui:message key="identity"/></th>
+ 	   	<th><liferay-ui:message key="paymentType"/></th>
+ 	   	<th><liferay-ui:message key="fullname"/></th>
+ 	   	<th><liferay-ui:message key="addressLine1"/></th>
+ 	   	<th><liferay-ui:message key="zipCode"/></th>
+ 	   	<th><liferay-ui:message key="state"/></th>
+ 	   	<th><liferay-ui:message key="city"/></th>
+ 	   	<th><liferay-ui:message key="phone"/></th>
+ 	   	<th><liferay-ui:message key="addressLine2"/></th>
+ 	   	<th><liferay-ui:message key="addressLine3"/></th>
+ 	   	<th><liferay-ui:message key="holderCountryCd"/></th>
+ 	   	<th><liferay-ui:message key="identityNum"/></th>
+ 	   	<th><liferay-ui:message key="email"/></th>
+ 	   	<th><liferay-ui:message key="paymentType"/></th>
+
+ 	    <%-- <th><liferay-ui:message key="paymentType"/></th> --%>
+ 	   	<th></th>
+ 	   	</tr>
+ 		   </thead>
+    		</table>
+    		
+    		<div id="<%=namespace%>allTabledialog" title="Basic dialog" style="display:none">
+        <div id="<%=namespace%>allTabledetail"></div>  
+    		<!-- <div class="paging-1"></div> -->
+    </div>
+    
+        <div id="<%=namespace%>allconfirm" style="display:none"><p><liferay-ui:message key="Areyousuretodeletethisaccount"/></p></div>
+ </div>
  </div>
  </div>
    <div id="<%=namespace%>error">
@@ -260,7 +307,7 @@
 	 selectcurrency1();
  })
  function getAccountInfor(account){
- 	 var js_text ='{"accountName":"'+account.accountName+'","accountId": "'+account.accountId+'","currencyCd": "'+account.currencyCd+'","balance": "'+account.balance+'","identity": "'+account.identity+'","paymenttype": "'+account.paymentType+'","fullname": "'+account.fullName+'","addressLine1": "'+account.addressLine1+'","zipCode": "'+account.zipCode+'","state": "'+account.state+'","city": "'+account.city+'","phone": "'+account.phone+'","addressLine2": "'+account.addressLine2+'","addressLine3": "'+account.addressLine3+'","holderCountryCd": "'+account.holderCountryCd+'","identityNum": "'+account.identityNum+'","email": "'+account.email+'","paymentType": "'+account.paymentType+'","detail": "'+account.detailJSON+'"}';
+ 	 var js_text ='{"accountName":"'+account.accountName+'","accountId": "'+account.accountId+'","currencyCd": "'+account.currencyCd+'","balance": "'+account.balance+'","identity": "'+account.identity+'","paymenttype": "'+account.paymentType+'","fullname": "'+account.fullName+'","addressLine1": "'+account.addressLine1+'","zipCode": "'+account.zipCode+'","state": "'+account.state+'","city": "'+account.city+'","phone": "'+account.phone+'","addressLine2": "'+account.addressLine2+'","addressLine3": "'+account.addressLine3+'","holderCountryCd": "'+account.holderCountryCd+'","identityNum": "'+account.identityNum+'","email": "'+account.email+'","accountType": "'+account.accountTypeCd+'","detail": "'+account.detailJSON+'"}';
  	 return JSON.parse(js_text);
  }
 
@@ -268,7 +315,7 @@
      Liferay.Service(
      		  '/LmReferenceServices-portlet.countrycurrency/get-currency-country-list',
      		  {
-     		    localeCd: "<%=language %>"
+     		    localeCd: "<%=langId %>"
      		  },
      		  function(obj) {
      		    
@@ -283,40 +330,80 @@
      			 		'/LmAccountServices-portlet.account/get-account-with-holder',
      			 		  {
      			 			  userId: userIdValue,
-     			 			  localeCd: "<%=language %>"
+     			 			  localeCd: "<%=langId %>"
      			 		  },
      			 		  function(obj) {
      			 		   active = 'UserAccount';
      			 		   accountinfo = obj.value;
-     			 		   currency = $( "#<%=namespace%>currencyselect1 option:selected" ).text();
+     			 		   currency = $( "#<%=namespace%>currencyselect1 option:selected" ).val();
      			 		   paymenttype = $("#<%=namespace%>paymentselect option:selected").val();
      			           needdata = [];
      			           showdata = [];
-     			           for(var i=0;i<accountinfo.length;i++){
-     			        	   if(accountinfo[i].currencyCd==currency && accountinfo[i].paymentType==paymenttype && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd=='UserAccount'){
-     			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     			           if(currency=='allcurrency'){
+     			        	   if(paymenttype=='alltype'){
+     			        		  for(var i=0;i<accountinfo.length;i++){
+              			        	   if(accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+              			        		   needdata.push(getAccountInfor(accountinfo[i]));
+              			        	   }
+     			        	   }}else{
+     			        		  for(var i=0;i<accountinfo.length;i++){
+           			        	   if(accountinfo[i].paymentType==paymenttype && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+           			        		   needdata.push(getAccountInfor(accountinfo[i]));
+           			        	   }
+           			           }
      			        	   }
+     			      
+     			           }else if(paymenttype=='alltype'){
+     			        	  if(currency=='allcurrency'){
+     			        		 for(var i=0;i<accountinfo.length;i++){
+            			        	   if(accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+            			        		   needdata.push(getAccountInfor(accountinfo[i]));
+            			        	   }
+   			        	   }
+     			        	  }else{
+     			        		 for(var i=0;i<accountinfo.length;i++){
+             			        	   if(accountinfo[i].currencyCd==currency && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+             			        		   needdata.push(getAccountInfor(accountinfo[i]));
+             			        	   }
+             			           }
+     			        	  }
+     			           }else{
+     			        	  for(var i=0;i<accountinfo.length;i++){
+       			        	   if(accountinfo[i].currencyCd==currency && accountinfo[i].paymentType==paymenttype && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+       			        		   needdata.push(getAccountInfor(accountinfo[i]));
+       			        	   }
+       			           }
      			           }
+     			          
      				         for(var i=0;i<needdata.length;i++){
      				        	 var arr2 = Object.keys(needdata[i]).map(function (key) { return needdata[i][key]; });
      				        	 showdata.push(arr2);
      				         }
-     				        
-     				         if(paymenttype=="BankAccount"){
+     				         if(paymenttype=='alltype'){
+     				        	generateallTable(showdata);
+     				        	$('#<%=namespace%>DC').css('display','none');
+  			                   $('#<%=namespace%>BA').css('display','none');
+  			                   $('#<%=namespace%>TP').css('display','none');
+  			                   $('#<%=namespace%>all').css('display','block');
+     				         }
+     				         else if(paymenttype=="BankAccount"){
      				        	generateBATable(showdata);
      				        	 $('#<%=namespace%>DC').css('display','none');
      			                   $('#<%=namespace%>BA').css('display','block');
      			                   $('#<%=namespace%>TP').css('display','none');
+     			                  $('#<%=namespace%>all').css('display','none');
      				         }else if(paymenttype=="DebitCard"){
      				        	generateDCTable(showdata);
      				        	$('#<%=namespace%>DC').css('display','block');
    			                   $('#<%=namespace%>BA').css('display','none');
    			                   $('#<%=namespace%>TP').css('display','none');
+   			                   $('#<%=namespace%>all').css('display','none');
      				         }else if(paymenttype=="ThirdParty"){
      				        	generateTPTable(showdata);
      				        	 $('#<%=namespace%>DC').css('display','none');
     			                   $('#<%=namespace%>BA').css('display','none');
     			                   $('#<%=namespace%>TP').css('display','block');
+    			                   $('#<%=namespace%>all').css('display','none');
      				         }
 
      			               $('#<%=namespace%>sender').click(function(){
@@ -326,33 +413,80 @@
      			              	  $('#<%=namespace%>sender').css('color',' white');
      			             	  $('#<%=namespace%>receiver').css('background',' white');
      			             	  $('#<%=namespace%>receiver').css('color',' #2eb452');
-     			             	  if(paymenttype=="BankAccount"){
-     			             		 $('#<%=namespace%>DC').css('display','none');
+     			             	  if(paymenttype=='alltype'){
+     			             		$('#<%=namespace%>DC').css('display','none');
+       			                   $('#<%=namespace%>BA').css('display','none');
+       			                   $('#<%=namespace%>TP').css('display','none');
+       			                   $('#<%=namespace%>all').css('display','block');
+     			             	  }
+     			             	  else if(paymenttype=="BankAccount"){
+     			             	   $('#<%=namespace%>DC').css('display','none');
        			                   $('#<%=namespace%>BA').css('display','block');
        			                   $('#<%=namespace%>TP').css('display','none');
+       			                   $('#<%=namespace%>all').css('display','none');
      			             	  }else if(paymenttype=="DebitCard"){
-     			             		$('#<%=namespace%>DC').css('display','block');
+     			             	   $('#<%=namespace%>DC').css('display','block');
       			                   $('#<%=namespace%>BA').css('display','none');
       			                   $('#<%=namespace%>TP').css('display','none');
+      			                   $('#<%=namespace%>all').css('display','none');
      			             	  }else if(paymenttype=="ThirdParty"){
      			             		   $('#<%=namespace%>DC').css('display','none');
          			                   $('#<%=namespace%>BA').css('display','none');
          			                   $('#<%=namespace%>TP').css('display','block');
+         			                  $('#<%=namespace%>all').css('display','none');
      			             	  }
      			                
      			                   active = 'UserAccount';
      			                   needdata = [];
      			                    showdata = [];
-     			                   for(var i=0;i<accountinfo.length;i++){
+     			                /*    for(var i=0;i<accountinfo.length;i++){
      			                	   if(accountinfo[i].currencyCd==currency && accountinfo[i].paymentType==paymenttype && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd=='UserAccount'){
      			                		   needdata.push(getAccountInfor(accountinfo[i]));
      			                	   }
-     			                   }
+     			                   } */
+     	     			           if(currency=='allcurrency'){
+     	     			        	   if(paymenttype=='alltype'){
+     	     			        		  for(var i=0;i<accountinfo.length;i++){
+     	              			        	   if(accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	              			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	              			        	   }
+     	     			        	   }}else{
+     	     			        		  for(var i=0;i<accountinfo.length;i++){
+     	           			        	   if(accountinfo[i].paymentType==paymenttype && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	           			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	           			        	   }
+     	           			           }
+     	     			        	   }
+     	     			      
+     	     			           }else if(paymenttype=='alltype'){
+     	     			        	  if(currency=='allcurrency'){
+     	     			        		 for(var i=0;i<accountinfo.length;i++){
+     	            			        	   if(accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	            			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	            			        	   }
+     	   			        	   }
+     	     			        	  }else{
+     	     			        		 for(var i=0;i<accountinfo.length;i++){
+     	             			        	   if(accountinfo[i].currencyCd==currency && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	             			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	             			        	   }
+     	             			           }
+     	     			        	  }
+     	     			           }else{
+     	     			        	  for(var i=0;i<accountinfo.length;i++){
+     	       			        	   if(accountinfo[i].currencyCd==currency && accountinfo[i].paymentType==paymenttype && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	       			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	       			        	   }
+     	       			           }
+     	     			           }
      			        	         for(var i=0;i<needdata.length;i++){
      			        	        	 var arr2 = Object.keys(needdata[i]).map(function (key) { return needdata[i][key]; });
      			        	        	 showdata.push(arr2);
      			        	         }
-     			        	         if(paymenttype=="BankAccount"){
+     			        	         if(paymenttype=='alltype'){
+     			        	        	generateallTable(showdata);
+     			        	         }
+     			        	         else if(paymenttype=="BankAccount"){
      	     				        	generateBATable(showdata);
      	     				         }else if(paymenttype=="DebitCard"){
      	     				        	generateDCTable(showdata);
@@ -368,32 +502,74 @@
      			                  $('#<%=namespace%>receiver').css('color',' white');
      			             	  $('#<%=namespace%>sender').css('background',' white');
      			             	  $('#<%=namespace%>sender').css('color',' #2eb452');
-     			              	  if(paymenttype=="BankAccount"){
+     			              	  if(paymenttype=='alltype'){
+     			              		$('#<%=namespace%>DC').css('display','none');
+       			                   $('#<%=namespace%>BA').css('display','none');
+       			                   $('#<%=namespace%>TP').css('display','none');
+       			                   $('#<%=namespace%>all').css('display','block');
+     			              	  }
+     			              	  else if(paymenttype=="BankAccount"){
       			             		 $('#<%=namespace%>DC').css('display','none');
         			                   $('#<%=namespace%>BA').css('display','block');
         			                   $('#<%=namespace%>TP').css('display','none');
+        			                   $('#<%=namespace%>all').css('display','none');
       			             	  }else if(paymenttype=="DebitCard"){
       			             		$('#<%=namespace%>DC').css('display','block');
        			                   $('#<%=namespace%>BA').css('display','none');
        			                   $('#<%=namespace%>TP').css('display','none');
+       			                   $('#<%=namespace%>all').css('display','none');
       			             	  }else if(paymenttype=="ThirdParty"){
       			             		   $('#<%=namespace%>DC').css('display','none');
           			                   $('#<%=namespace%>BA').css('display','none');
           			                   $('#<%=namespace%>TP').css('display','block');
+          			                   $('#<%=namespace%>all').css('display','none');
       			             	  }
      			                    active = 'RecipientAccount';
      			                    needdata = [];
      			                    showdata = [];
-     			                    for(var i=0;i<accountinfo.length;i++){
-     			                 	   if(accountinfo[i].currencyCd==currency && accountinfo[i].paymentType==paymenttype && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd=='RecipientAccount'){
-     			                 		   needdata.push(getAccountInfor(accountinfo[i]));
-     			                 	   }
-     			                    }
+     					           if(currency=='allcurrency'){
+     	     			        	   if(paymenttype=='alltype'){
+     	     			        		  for(var i=0;i<accountinfo.length;i++){
+     	              			        	   if(accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	              			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	              			        	   }
+     	     			        	   }}else{
+     	     			        		  for(var i=0;i<accountinfo.length;i++){
+     	           			        	   if(accountinfo[i].paymentType==paymenttype && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	           			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	           			        	   }
+     	           			           }
+     	     			        	   }
+     	     			      
+     	     			           }else if(paymenttype=='alltype'){
+     	     			        	  if(currency=='allcurrency'){
+     	     			        		 for(var i=0;i<accountinfo.length;i++){
+     	            			        	   if(accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	            			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	            			        	   }
+     	   			        	   }
+     	     			        	  }else{
+     	     			        		 for(var i=0;i<accountinfo.length;i++){
+     	             			        	   if(accountinfo[i].currencyCd==currency && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	             			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	             			        	   }
+     	             			           }
+     	     			        	  }
+     	     			           }else{
+     	     			        	  for(var i=0;i<accountinfo.length;i++){
+     	       			        	   if(accountinfo[i].currencyCd==currency && accountinfo[i].paymentType==paymenttype && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	       			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	       			        	   }
+     	       			           }
+     	     			           }
      			         	         for(var i=0;i<needdata.length;i++){
      			         	        	 var arr2 = Object.keys(needdata[i]).map(function (key) { return needdata[i][key]; });
      			         	        	 showdata.push(arr2);
      			         	         }
-     			         	         if(paymenttype=="BankAccount"){
+     			         	        if(paymenttype=='alltype'){
+    			        	        	generateallTable(showdata);
+    			        	         }
+     			         	       else if(paymenttype=="BankAccount"){
      	     				        	generateBATable(showdata);
      	     				         }else if(paymenttype=="DebitCard"){
      	     				        	generateDCTable(showdata);
@@ -404,33 +580,75 @@
      		
      			               
      			 		        A.one("#<%=namespace%>currencyselect1").on('change', function(){
-     			 		        	 currency = $( "#<%=namespace%>currencyselect1 option:selected" ).text();
+     			 		        	 currency = $( "#<%=namespace%>currencyselect1 option:selected" ).val();
      			 		        	paymenttype = $("#<%=namespace%>paymentselect option:selected").val();
      			                     needdata = [];
      			                     showdata = [];
-     			                    for(var i=0;i<accountinfo.length;i++){
-     			                 	   if(accountinfo[i].currencyCd==currency && accountinfo[i].paymentType==paymenttype && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
-     			                 		   needdata.push(getAccountInfor(accountinfo[i]));
-     			                 	   }
-     			                    }
+     			 		           if(currency=='allcurrency'){
+     	     			        	   if(paymenttype=='alltype'){
+     	     			        		  for(var i=0;i<accountinfo.length;i++){
+     	              			        	   if(accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	              			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	              			        	   }
+     	     			        	   }}else{
+     	     			        		  for(var i=0;i<accountinfo.length;i++){
+     	           			        	   if(accountinfo[i].paymentType==paymenttype && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	           			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	           			        	   }
+     	           			           }
+     	     			        	   }
+     	     			      
+     	     			           }else if(paymenttype=='alltype'){
+     	     			        	  if(currency=='allcurrency'){
+     	     			        		 for(var i=0;i<accountinfo.length;i++){
+     	            			        	   if(accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	            			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	            			        	   }
+     	   			        	   }
+     	     			        	  }else{
+     	     			        		 for(var i=0;i<accountinfo.length;i++){
+     	             			        	   if(accountinfo[i].currencyCd==currency && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	             			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	             			        	   }
+     	             			           }
+     	     			        	  }
+     	     			           }else{
+     	     			        	  for(var i=0;i<accountinfo.length;i++){
+     	       			        	   if(accountinfo[i].currencyCd==currency && accountinfo[i].paymentType==paymenttype && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	       			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	       			        	   }
+     	       			           }
+     	     			           }
      			         	         for(var i=0;i<needdata.length;i++){
      			         	        	 var arr2 = Object.keys(needdata[i]).map(function (key) { return needdata[i][key]; });
      			         	        	 showdata.push(arr2);
      			         	         }
-     			                	  if(paymenttype=="BankAccount"){
+     			         	       if(paymenttype=='alltype'){
+        			              		$('#<%=namespace%>DC').css('display','none');
+          			                   $('#<%=namespace%>BA').css('display','none');
+          			                   $('#<%=namespace%>TP').css('display','none');
+          			                   $('#<%=namespace%>all').css('display','block');
+        			              	  }
+     			         	       else if(paymenttype=="BankAccount"){
           			             		 $('#<%=namespace%>DC').css('display','none');
             			                   $('#<%=namespace%>BA').css('display','block');
             			                   $('#<%=namespace%>TP').css('display','none');
+            			                   $('#<%=namespace%>all').css('display','none');
           			             	  }else if(paymenttype=="DebitCard"){
           			             		$('#<%=namespace%>DC').css('display','block');
            			                   $('#<%=namespace%>BA').css('display','none');
            			                   $('#<%=namespace%>TP').css('display','none');
+           			                   $('#<%=namespace%>all').css('display','none');
           			             	  }else if(paymenttype=="ThirdParty"){
           			             		   $('#<%=namespace%>DC').css('display','none');
               			                   $('#<%=namespace%>BA').css('display','none');
               			                   $('#<%=namespace%>TP').css('display','block');
+              			                   $('#<%=namespace%>all').css('display','none');
           			             	  }
-     			         	         if(paymenttype=='ThirdParty'){
+     			                	 if(paymenttype=='alltype'){
+     			        	        	generateallTable(showdata);
+     			        	         }
+     			                	 else if(paymenttype=='ThirdParty'){
      			         	        	generateTPTable(showdata);
      			         	         }else if(paymenttype=='BankAccount'){
      			         	        	generateBATable(showdata);
@@ -440,33 +658,75 @@
 
      			 		        });
      			 		        A.one("#<%=namespace%>paymentselect").on('change', function(){
-    			 		        	currency = $( "#<%=namespace%>currencyselect1 option:selected" ).text();
+    			 		        	currency = $( "#<%=namespace%>currencyselect1 option:selected" ).val();
     			 		        	paymenttype = $("#<%=namespace%>paymentselect option:selected").val();
     			                     needdata = [];
     			                     showdata = [];
-    			                    for(var i=0;i<accountinfo.length;i++){
-    			                 	   if(accountinfo[i].currencyCd==currency && accountinfo[i].paymentType==paymenttype && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
-    			                 		   needdata.push(getAccountInfor(accountinfo[i]));
-    			                 	   }
-    			                    }
+    			  		           if(currency=='allcurrency'){
+     	     			        	   if(paymenttype=='alltype'){
+     	     			        		  for(var i=0;i<accountinfo.length;i++){
+     	              			        	   if(accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	              			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	              			        	   }
+     	     			        	   }}else{
+     	     			        		  for(var i=0;i<accountinfo.length;i++){
+     	           			        	   if(accountinfo[i].paymentType==paymenttype && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	           			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	           			        	   }
+     	           			           }
+     	     			        	   }
+     	     			      
+     	     			           }else if(paymenttype=='alltype'){
+     	     			        	  if(currency=='allcurrency'){
+     	     			        		 for(var i=0;i<accountinfo.length;i++){
+     	            			        	   if(accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	            			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	            			        	   }
+     	   			        	   }
+     	     			        	  }else{
+     	     			        		 for(var i=0;i<accountinfo.length;i++){
+     	             			        	   if(accountinfo[i].currencyCd==currency && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	             			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	             			        	   }
+     	             			           }
+     	     			        	  }
+     	     			           }else{
+     	     			        	  for(var i=0;i<accountinfo.length;i++){
+     	       			        	   if(accountinfo[i].currencyCd==currency && accountinfo[i].paymentType==paymenttype && accountinfo[i].accountActiveFlag=="Y" && accountinfo[i].accountTypeCd==active){
+     	       			        		   needdata.push(getAccountInfor(accountinfo[i]));
+     	       			        	   }
+     	       			           }
+     	     			           }
     			         	         for(var i=0;i<needdata.length;i++){
     			         	        	 var arr2 = Object.keys(needdata[i]).map(function (key) { return needdata[i][key]; });
     			         	        	 showdata.push(arr2);
-    			         	         }	                
-    			                 	  if(paymenttype=="BankAccount"){
+    			         	         }	 
+    			         	        if(paymenttype=='alltype'){
+    			         	           $('#<%=namespace%>DC').css('display','none');
+           			                   $('#<%=namespace%>BA').css('display','none');
+           			                   $('#<%=namespace%>TP').css('display','none');
+           			                   $('#<%=namespace%>all').css('display','block');
+    			        	         }
+    			         	        else if(paymenttype=="BankAccount"){
     	     			             		 $('#<%=namespace%>DC').css('display','none');
     	       			                   $('#<%=namespace%>BA').css('display','block');
     	       			                   $('#<%=namespace%>TP').css('display','none');
+    	       			                $('#<%=namespace%>all').css('display','none');
     	     			             	  }else if(paymenttype=="DebitCard"){
     	     			             		$('#<%=namespace%>DC').css('display','block');
     	      			                   $('#<%=namespace%>BA').css('display','none');
     	      			                   $('#<%=namespace%>TP').css('display','none');
+    	      			                 $('#<%=namespace%>all').css('display','none');
     	     			             	  }else if(paymenttype=="ThirdParty"){
     	     			             		   $('#<%=namespace%>DC').css('display','none');
     	         			                   $('#<%=namespace%>BA').css('display','none');
     	         			                   $('#<%=namespace%>TP').css('display','block');
+    	         			                  $('#<%=namespace%>all').css('display','none');
     	     			             	  }
-    			         	         if(paymenttype=='ThirdParty'){
+    			                 	 if(paymenttype=='alltype'){
+     			        	        	generateallTable(showdata);
+     			        	         }
+    			                 	 else if(paymenttype=='ThirdParty'){
     			         	        	generateTPTable(showdata);
     			         	         }else if(paymenttype=='BankAccount'){
     			         	        	generateBATable(showdata);
@@ -560,7 +820,7 @@
      			     			     var countryCd = dataSet[newindex][14];
      			     			     var phone = dataSet[newindex][11];
      			     			     var identityNum = dataSet[newindex][15];
-                                     var pmtType = dataSet[newindex][17];
+                                     var pmtType = dataSet[newindex][5];
                                      var detail = dataSet[newindex][18];
                                      var routing = dataSet[newindex][18].match(/routingNumber=\'([0-9]+)/);
                                      if(routing!=null){
@@ -594,13 +854,13 @@
      			 		    	  	  	                   <tr><td>'+'<liferay-ui:message key="fullname"/>'+':</td><td>'+data[6]+'</td></tr>\
  			 		    	         	                   <tr><td>'+'<liferay-ui:message key="email"/>'+':</td><td>'+data[16]+'</td></tr>\
  			 		    	         	                   <tr><td>'+'<liferay-ui:message key="identity"/>'+':</td><td>'+data[4]+'</td></tr>\
- 			 		    	         	                   <tr><td>'+'<liferay-ui:message key="addressLine1"/>'+':</td><td>'+data[7]+'</td></tr>\
- 			 		    	         	                   <tr><td>'+'<liferay-ui:message key="addressLine2"/>'+':</td><td>'+data[12]+'</td></tr>\
- 			 		    	         	                   <tr><td>'+'<liferay-ui:message key="addressLine3"/>'+':</td><td>'+data[13]+'</td></tr>\
- 			 		    	         	                   <tr><td>'+'<liferay-ui:message key="city"/>'+':</td><td>'+data[10]+'</td></tr>\
- 			 		    	         	                   <tr><td>'+'<liferay-ui:message key="state"/>'+':</td><td>'+data[9]+'</td></tr>\
- 			 		    	         	                   <tr><td>'+'<liferay-ui:message key="zipCode"/>'+':</td><td>'+data[8]+'</td></tr>\
- 			 		    	         	                   <tr><td>'+'<liferay-ui:message key="countryCd"/>'+':</td><td>'+data[14]+'</td></tr>\
+ 			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine1"/>'+':</td><td>'+data[7]+'</td></tr>\
+ 			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine2"/>'+':</td><td>'+data[12]+'</td></tr>\
+ 			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine3"/>'+':</td><td>'+data[13]+'</td></tr>\
+ 			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="city"/>'+':</td><td>'+data[10]+'</td></tr>\
+ 			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="state"/>'+':</td><td>'+data[9]+'</td></tr>\
+ 			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="zipCode"/>'+':</td><td>'+data[8]+'</td></tr>\
+ 			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="countryCd"/>'+':</td><td>'+data[14]+'</td></tr>\
  			 		    	         	                   <tr><td>'+'<liferay-ui:message key="phone"/>'+':</td><td>'+data[11]+'</td></tr>\
  			 		    	         	                   <tr><td>'+'<liferay-ui:message key="routing"/>'+':</td><td>'+routnum+'</td></tr>\
      			 		    	         	                   </table></div>')
@@ -608,108 +868,7 @@
      			 		    		     	       },
      			 	    		     	       buttons: [
      			 	    		     	              
-     			 	    		          			    {   id:'delete',
-     			 	    		          			        text: '<liferay-ui:message key="Deletethisaccount"/>',
-     			 	    		          			        //open: function() { $(this).addClass('b') }, //will append a class called 'b' to the created 'OK' button.
-     			 	    		          			        click: function() { 
-     			 	    		          			        	
-     			 	    		          			        	
-     			 	    		          			        		$('#<%=namespace%>BATabledialog').dialog('close');
-     			 	    		          			        		$('#<%=namespace%>baconfirm').dialog({
-     			 	    		          			        			title:'<liferay-ui:message key="delete"/>',
-     			 	    		          			        			modal: true,
-     			 	    		          			        			buttons:[
-     			 	    		          			        			         {
-     			 	    		          			        			        	 text:'<liferay-ui:message key="confirm"/>',
-     			 	    		          			        			        	 click:function(){
-     			 	    		          			        			        	     	    		          		
-     			 	    					    		                                     	Liferay.Service(
-     			 	    					    		                                    			'/LmAccountServices-portlet.account/update-account-and-holder',
-     			 	    					    		                                    			  {
-     			 	    					    		                                    				accountId: accountid,
-     			 	    					    		                                    			    accountName: accountname,
-     			 	    					    		                                    			    accountDetailObject: detail,
-     			 	    					    		                                    			    identity:identity,
-     			 	    					    		                                    			    pmtType:pmtType,
-     			 	    					    		                                    			    activeFlag: 'N',
-     			 	    					    		                                    			    expDate:'',
-   			 	    					    		                                    			        pwd:'',
-     			 	    					    		                                    			    fullName: fullName,
-     			 	    					    		                                    			    firstName: '',
-     			 	    					    		                                    			    lastName: '',
-     			 	    					    		                                    			    middleName: '',
-     			 	    					    		                                    			    email: email,
-     			 	    					    		                                    			    addressLine1: addressLine1,
-     			 	    					    		                                    			    addressLine2: addressLine2,
-     			 	    					    		                                    			    addressLine3: addressLine3,
-     			 	    					    		                                    			    city: city,
-     			 	    					    		                                    			    state: state,
-     			 	    					    		                                    			    zipCode: zipcode,
-     			 	    					    		                                    			    countryCd: countryCd,
-     			 	    					    		                                    			    phone: phone,
-     			 	    					    		                                    			    identityNum: "",
-     			 	    					    		                                    			    localeCd: "<%=langId %>"
-     			 	    					    		                                    			  },function(response){
-     			 	    					    		                                    				//console.log(response);
-     			 	    					    		                                    				if(response.status.code==200){
-     			 	    					    		                                    					dataSet.splice(window.index, 1);
-     	     			 	      			 	    					    		                              for(var i=0;i<accountinfo.length;i++){
-     	     			 	      			 	    					    		                            	  if(accountinfo[i].accountId==accountid){
-     	     			 	      			 	    					    		                            		accountinfo.splice(i,1);
-     	     			 	      			 	    					    		                            		break;
-     	     			 	      			 	    					    		                            	  }
-     	     			 	      			 	    					    		                              }
-     	     			 	      			 	    					    		                               generateBATable(dataSet);
-     	     			 	      			 	    		          			        			        		$('#<%=namespace%>baconfirm').dialog('close');
-     	     			 	    					    		                                    				  
-     			 	    					    		                                    				}else{
-     			 	    					    		                                    					$('#<%=namespace%>baconfirm').dialog('close');
-     			 	    					    		                                    		        	$('#<%=namespace%>error').dialog({
-     			 	    					                                 			        					title: '<liferay-ui:message key="error"/>',
-     			 	    					                                 			        			        modal: true,
-     			 	    					                                 			        			        width: screenWidth,
-     			 	    					                                 			        			        height:'auto',
-     			 	    					                                 			        			        resizable:false,
-     			 	    					                                 			        			        position: { my: "center", at: "center", of: window },
-     			 	    					                                 			        			        open: function(){
-     			 	    					                                 			        			        	$('#<%=namespace%>errordetail').html('<p>'+obj.status.message+'<p>')
-     			 	    					                                 			        			        	
-     			 	    					                                 			        			        },
-     			 	    					                                 			        			        buttons:[
-     			 	    					                                 			        			                 {
-     			 	    					                                 			        			                	id:'error',
-     			 	    					                                 			        	         			        text: '<liferay-ui:message key="confirm"/>', 
-     			 	    					                                 			        	         			        click: function() {
-     			 	    					                                 			        	         			        	
-     			 	    					                                 			        	         			        	$('#<%=namespace%>error').dialog('close');
-     			 	    					                                 			        	         			        }
-     			 	    					                                 			        			                 }
-     			 	    					                                 			        			                 
-     			 	    					                                 			        			                 ]
-     			 	    					                                 			        				})
-     			 	    					    		                                    				}
-     			 	      			 	    		          			        			        	   
-     			 	    					    		                                    			  })
-     			 	    					    		                                   	 	    					    		          		
-     			 	    		          			        			        	 }
-     			 	    		          			        			         },
-     			 	    		          			        			         {
-     			 	    		          			        			        	 text:'<liferay-ui:message key="Cancel"/>',
-     			 	    		          			        			        	 click:function(){
-     			 	    		          			        			        		$('#<%=namespace%>baconfirm').dialog('close');
-     			 	    		          			        			        	 }
-     			 	    		          			        			         }
-     			 	    		          			        			         
-     			 	    		          			        			         ]
-     			 	    		          			        		
-     			 	    		          			        			
-     			 	    		          			        		})
-     			 	    		   			    			     $(".ui-dialog-titlebar").css("background-color", "#61cc61");
-     			 	    		   	    		        	     $(".ui-dialog-title").css("color", "white");
-     			 	    		   	    		        	     $(".ui-dialog").css("position", "center");
-     			 	    		          			        	
-     			 	    		          			        }
-     			 	    		          			    },
+     			 	    
      			 	    		          			  {
      			 	    		     	                	 text:'<liferay-ui:message key="edit"/>',
       			 	    		          			        click: function() { 
@@ -727,15 +886,18 @@
  			     			 		    		     	  	                   <tr><td>'+'<liferay-ui:message key="fullname"/>'+'<span style="color:red;margin:5px;">*</span>:</td><td><input type="text" id="fullname" value="'+data[6]+'"></td><td style="display:none" id="fullnamealert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
  			        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="email"/>'+':</td><td><input type="text" id="email" value="'+data[16]+'"></td></tr>\
  			        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="identity"/>'+'<span style="color:red;margin:5px;">*</span>:</td><td><input type="text" id="identity" value="'+data[4]+'"></td><td style="display:none" id="identityalert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p><td></tr>\
- 			        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="addressLine1"/>'+':</td><td><input type="text" id="add1" value="'+data[7]+'"></td></tr>\
- 			        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="addressLine2"/>'+':</td><td><input type="text" id="add2" value="'+data[12]+'"></td></tr>\
- 			        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="addressLine3"/>'+':</td><td><input type="text" id="add3" value="'+data[13]+'"></td></tr>\
- 			        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="city"/>'+':</td><td><input type="text" id="city" value="'+data[10]+'"></td></tr>\
- 			        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="state"/>'+':</td><td><input type="text" id="state" value="'+data[9]+'"></td></tr>\
- 			        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="zipCode"/>'+':</td><td><input type="text" id="zipcode" value="'+data[8]+'"></td></tr>\
- 			        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="phone"/>'+':</td><td><input type="text" id="phone" value="'+data[11]+'"></td></tr>\
+ 			        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine1"/>'+':</td><td><input type="text" id="add1" value="'+data[7]+'"></td></tr>\
+ 			        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine2"/>'+':</td><td><input type="text" id="add2" value="'+data[12]+'"></td></tr>\
+ 			        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine3"/>'+':</td><td><input type="text" id="add3" value="'+data[13]+'"></td></tr>\
+ 			        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="city"/>'+':</td><td><input type="text" id="city" value="'+data[10]+'"></td></tr>\
+ 			        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="state"/>'+':</td><td><input type="text" id="state" value="'+data[9]+'"></td></tr>\
+ 			        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="zipCode"/>'+':</td><td><input type="text" id="zipcode" value="'+data[8]+'"></td></tr>\
+ 			        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="phone"/>'+'<span class="phonemust" style="color:red;margin:5px;display:none">*</span>:</td><td><input type="text" id="phone" value="'+data[11]+'"></td><td style="display:none" id="phonealert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
  			        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="routing"/>'+'<span style="color:red;margin:5px;">*</span>:</td><td><input onkeydown="return (event.which >= 48 && event.which <= 57)|| event.which == 8" type="text" id="routnum" value="'+routnum+'"></td><td style="display:none" id="routnumalert"><p style="color:red"><liferay-ui:message key="wrongformat"/></p><td></tr>\
- 			     			 		    	         	                   </table></div>')
+ 			     			 		    	         	                   </table></div>');
+ 			        			 		    	         	                if(data[17]=="UserAccount"){
+ 					     			 		    		     	    	    	 $('.phonemust').show();
+ 					     			 		    		     	    	     }
  			     			 		    	         	               
  			     			 		    		     	           },
  			 	    		          			        			buttons:[
@@ -768,7 +930,13 @@
  			 	    		          			        			                       var newzipcode = $('#zipcode').val();
  			 	    		          			        			                  
  			 	    		          			        			                       var newphone = $('#phone').val();
- 			 	    		          			        			                
+ 			 	    		          			        			                    if(data[17]=="UserAccount"){
+ 			 	    		          			        			                    	 if(newphone==""){
+ 			 	    		          			        			                    		   $('#phonealert').show();
+ 			 	    		          			        			                    	   }else{
+ 			 	    		          			        			                    		$('#phonealert').hide();
+ 			 	    		          			        			                    	   }
+ 			 	    		          			        			                       }
  			 	    		          			        			                       var newidentitynum = $('#identitynum').val();
  			 	    		          			        			                
  			 	    		          			        			                       var oldroutnum = "routingNumber='"+routnum+"'";
@@ -779,9 +947,16 @@
 		 	    		          			        			        	     		$('#routnumalert').css('display','none');
 		 	    		          			        			        	     	   }
  			 	    		          			        			                       var newdetail = data[18].replace(oldroutnum,newroutnum);
- 			 	    		          			        			                       if(newfullname!=""&&newidentity!=""&& ($('#routnum').val().match(/^\d+$/))){
- 			 	    		          			        			                    	   flag = true;
+ 			 	    		          			        			                       if(data[17]=="UserAccount"){
+ 			 	    		          			        			                    	if(newfullname!=""&&newidentity!=""&& ($('#routnum').val().match(/^\d+$/))&&newphone!=""){
+  			 	    		          			        			                    	   flag = true;
+  			 	    		          			        			                       }
+ 			 	    		          			        			                       }else{
+ 			 	    		          			        			                    	if(newfullname!=""&&newidentity!=""&& ($('#routnum').val().match(/^\d+$/))){
+  			 	    		          			        			                    	   flag = true;
+  			 	    		          			        			                       }
  			 	    		          			        			                       }
+ 			 	    		          			        			                       
  			 	    		          			        			                       if(flag){
  			 	    					    		                                      	Liferay.Service(
  			 	    					    		                                    			'/LmAccountServices-portlet.account/update-account-and-holder',
@@ -890,6 +1065,108 @@
  			 	    		          			        	
  			 	    		          			        }
      			 	    		     	                 },
+     			 	    		     	      	    {   id:'delete',
+      			 	    		          			        text: '<liferay-ui:message key="Deletethisaccount"/>',
+      			 	    		          			        //open: function() { $(this).addClass('b') }, //will append a class called 'b' to the created 'OK' button.
+      			 	    		          			        click: function() { 
+      			 	    		          			        	
+      			 	    		          			        	
+      			 	    		          			        		$('#<%=namespace%>BATabledialog').dialog('close');
+      			 	    		          			        		$('#<%=namespace%>baconfirm').dialog({
+      			 	    		          			        			title:'<liferay-ui:message key="delete"/>',
+      			 	    		          			        			modal: true,
+      			 	    		          			        			buttons:[
+      			 	    		          			        			         {
+      			 	    		          			        			        	 text:'<liferay-ui:message key="confirm"/>',
+      			 	    		          			        			        	 click:function(){
+      			 	    		          			        			        	     	    		          		
+      			 	    					    		                                     	Liferay.Service(
+      			 	    					    		                                    			'/LmAccountServices-portlet.account/update-account-and-holder',
+      			 	    					    		                                    			  {
+      			 	    					    		                                    				accountId: accountid,
+      			 	    					    		                                    			    accountName: accountname,
+      			 	    					    		                                    			    accountDetailObject: data[18],
+      			 	    					    		                                    			    identity:identity,
+      			 	    					    		                                    			    pmtType:pmtType,
+      			 	    					    		                                    			    activeFlag: 'N',
+      			 	    					    		                                    			    expDate:'',
+    			 	    					    		                                    			        pwd:'',
+      			 	    					    		                                    			    fullName: fullName,
+      			 	    					    		                                    			    firstName: '',
+      			 	    					    		                                    			    lastName: '',
+      			 	    					    		                                    			    middleName: '',
+      			 	    					    		                                    			    email: email,
+      			 	    					    		                                    			    addressLine1: addressLine1,
+      			 	    					    		                                    			    addressLine2: addressLine2,
+      			 	    					    		                                    			    addressLine3: addressLine3,
+      			 	    					    		                                    			    city: city,
+      			 	    					    		                                    			    state: state,
+      			 	    					    		                                    			    zipCode: zipcode,
+      			 	    					    		                                    			    countryCd: countryCd,
+      			 	    					    		                                    			    phone: phone,
+      			 	    					    		                                    			    identityNum: "",
+      			 	    					    		                                    			    localeCd: "<%=langId %>"
+      			 	    					    		                                    			  },function(response){
+      			 	    					    		                                    				//console.log(response);
+      			 	    					    		                                    				if(response.status.code==200){
+      			 	    					    		                                    					dataSet.splice(window.index, 1);
+      	     			 	      			 	    					    		                              for(var i=0;i<accountinfo.length;i++){
+      	     			 	      			 	    					    		                            	  if(accountinfo[i].accountId==accountid){
+      	     			 	      			 	    					    		                            		accountinfo.splice(i,1);
+      	     			 	      			 	    					    		                            		break;
+      	     			 	      			 	    					    		                            	  }
+      	     			 	      			 	    					    		                              }
+      	     			 	      			 	    					    		                               generateBATable(dataSet);
+      	     			 	      			 	    		          			        			        		$('#<%=namespace%>baconfirm').dialog('close');
+      	     			 	    					    		                                    				  
+      			 	    					    		                                    				}else{
+      			 	    					    		                                    					$('#<%=namespace%>baconfirm').dialog('close');
+      			 	    					    		                                    		        	$('#<%=namespace%>error').dialog({
+      			 	    					                                 			        					title: '<liferay-ui:message key="error"/>',
+      			 	    					                                 			        			        modal: true,
+      			 	    					                                 			        			        width: screenWidth,
+      			 	    					                                 			        			        height:'auto',
+      			 	    					                                 			        			        resizable:false,
+      			 	    					                                 			        			        position: { my: "center", at: "center", of: window },
+      			 	    					                                 			        			        open: function(){
+      			 	    					                                 			        			        	$('#<%=namespace%>errordetail').html('<p>'+obj.status.message+'<p>')
+      			 	    					                                 			        			        	
+      			 	    					                                 			        			        },
+      			 	    					                                 			        			        buttons:[
+      			 	    					                                 			        			                 {
+      			 	    					                                 			        			                	id:'error',
+      			 	    					                                 			        	         			        text: '<liferay-ui:message key="confirm"/>', 
+      			 	    					                                 			        	         			        click: function() {
+      			 	    					                                 			        	         			        	
+      			 	    					                                 			        	         			        	$('#<%=namespace%>error').dialog('close');
+      			 	    					                                 			        	         			        }
+      			 	    					                                 			        			                 }
+      			 	    					                                 			        			                 
+      			 	    					                                 			        			                 ]
+      			 	    					                                 			        				})
+      			 	    					    		                                    				}
+      			 	      			 	    		          			        			        	   
+      			 	    					    		                                    			  })
+      			 	    					    		                                   	 	    					    		          		
+      			 	    		          			        			        	 }
+      			 	    		          			        			         },
+      			 	    		          			        			         {
+      			 	    		          			        			        	 text:'<liferay-ui:message key="Cancel"/>',
+      			 	    		          			        			        	 click:function(){
+      			 	    		          			        			        		$('#<%=namespace%>baconfirm').dialog('close');
+      			 	    		          			        			        	 }
+      			 	    		          			        			         }
+      			 	    		          			        			         
+      			 	    		          			        			         ]
+      			 	    		          			        		
+      			 	    		          			        			
+      			 	    		          			        		})
+      			 	    		   			    			     $(".ui-dialog-titlebar").css("background-color", "#61cc61");
+      			 	    		   	    		        	     $(".ui-dialog-title").css("color", "white");
+      			 	    		   	    		        	     $(".ui-dialog").css("position", "center");
+      			 	    		          			        	
+      			 	    		          			        }
+      			 	    		          			    },
      			 	    		          			  ]
      			 	    			    	 
      			 	    			    	 
@@ -987,7 +1264,7 @@
  			     			     var countryCd = dataSet[newindex][14];
  			     			     var phone = dataSet[newindex][11];
  			     			     var identityNum = dataSet[newindex][15];
-                                 var pmtType = dataSet[newindex][17];
+                                 var pmtType = dataSet[newindex][5];
                                  var detail = dataSet[newindex][18];
                                  
      			                 window.index=newindex;
@@ -1013,119 +1290,19 @@
   			 		    	  	  	                   <tr><td>'+'<liferay-ui:message key="fullname"/>'+':</td><td>'+data[6]+'</td></tr>\
 			 		    	         	                   <tr><td>'+'<liferay-ui:message key="email"/>'+':</td><td>'+data[16]+'</td></tr>\
 			 		    	         	                   <tr><td>'+'<liferay-ui:message key="identity"/>'+':</td><td>'+data[4]+'</td></tr>\
-			 		    	         	                   <tr><td>'+'<liferay-ui:message key="addressLine1"/>'+':</td><td>'+data[7]+'</td></tr>\
-			 		    	         	                   <tr><td>'+'<liferay-ui:message key="addressLine2"/>'+':</td><td>'+data[12]+'</td></tr>\
-			 		    	         	                   <tr><td>'+'<liferay-ui:message key="addressLine3"/>'+':</td><td>'+data[13]+'</td></tr>\
-			 		    	         	                   <tr><td>'+'<liferay-ui:message key="city"/>'+':</td><td>'+data[10]+'</td></tr>\
-			 		    	         	                   <tr><td>'+'<liferay-ui:message key="state"/>'+':</td><td>'+data[9]+'</td></tr>\
-			 		    	         	                   <tr><td>'+'<liferay-ui:message key="zipCode"/>'+':</td><td>'+data[8]+'</td></tr>\
-			 		    	         	                   <tr><td>'+'<liferay-ui:message key="countryCd"/>'+':</td><td>'+data[14]+'</td></tr>\
+			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine1"/>'+':</td><td>'+data[7]+'</td></tr>\
+			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine2"/>'+':</td><td>'+data[12]+'</td></tr>\
+			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine3"/>'+':</td><td>'+data[13]+'</td></tr>\
+			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="city"/>'+':</td><td>'+data[10]+'</td></tr>\
+			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="state"/>'+':</td><td>'+data[9]+'</td></tr>\
+			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="zipCode"/>'+':</td><td>'+data[8]+'</td></tr>\
+			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="countryCd"/>'+':</td><td>'+data[14]+'</td></tr>\
 			 		    	         	                   <tr><td>'+'<liferay-ui:message key="phone"/>'+':</td><td>'+data[11]+'</td></tr>\
      			 	    	         	                   </table></div>')
      			 	    		     	       },
      			     		     	       buttons: [
      			     		     	              
-     			     		          			    {   id:'delete',
-     			     		          			        text: '<liferay-ui:message key="Deletethisaccount"/>',
-     			     		          			        //open: function() { $(this).addClass('b') }, //will append a class called 'b' to the created 'OK' button.
-     			     		          			        click: function() { 
-     			     		          			        	
-     			     		          			       
-     			     		          			        	
-     			     		          			        		$('#<%=namespace%>TPTabledialog').dialog('close');
-     			     		          			        		$('#<%=namespace%>tpconfirm').dialog({
-     			     		          			        			title:'<liferay-ui:message key="delete"/>',
-     			     		          			        			modal: true,
-     			     		          			        			buttons:[
-     			     		          			        			         {
-     			     		          			        			        	 text:'<liferay-ui:message key="confirm"/>',
-     			     		          			        			        	 click:function(){
-     			     		          			        			        	     	    		          		
-     			     					    		                                     	Liferay.Service(
-     			     					    		                                    			'/LmAccountServices-portlet.account/update-account-and-holder',
-     			     					    		                                    			  {
-     			     					    		                                    				accountId: accountid,
- 			 	    					    		                                    			    accountName: accountname,
- 			 	    					    		                                    			    accountDetailObject: detail,
- 			 	    					    		                                    			    identity:identity,
- 			 	    					    		                                    			    pmtType:pmtType,
- 			 	    					    		                                    			    activeFlag: 'N',
- 			 	    					    		                                    			    expDate:'',
-			 	    					    		                                    			    pwd:'',
- 			 	    					    		                                    			    fullName: fullName,
- 			 	    					    		                                    			    firstName: '',
- 			 	    					    		                                    			    lastName: '',
- 			 	    					    		                                    			    middleName: '',
- 			 	    					    		                                    			    email: email,
- 			 	    					    		                                    			    addressLine1: addressLine1,
- 			 	    					    		                                    			    addressLine2: addressLine2,
- 			 	    					    		                                    			    addressLine3: addressLine3,
- 			 	    					    		                                    			    city: city,
- 			 	    					    		                                    			    state: state,
- 			 	    					    		                                    			    zipCode: zipcode,
- 			 	    					    		                                    			    countryCd: countryCd,
- 			 	    					    		                                    			    phone: phone,
- 			 	    					    		                                    			    identityNum: "",
- 			 	    					    		                                    			    localeCd: "<%=langId %>"
-     			     					    		                                    			  },function(response){
-     			     					    		                                    				if(response.status.code==200){
-     			     					    		                                    					dataSet.splice(window.index, 1);
-			     	     			     					    		                                      for(var i=0;i<accountinfo.length;i++){
-			     	         			 	    					    		                            	  if(accountinfo[i].accountId==accountid){
-			     	         			 	    					    		                            		accountinfo.splice(i,1);
-			     	         			 	    					    		                            		break;
-			     	         			 	    					    		                            	  }
-			     	         			 	    					    		                              }
-			     	     			     					    		                                     	generateTPTable(dataSet);
-			     	     			     					    		                                     	$('#<%=namespace%>tpconfirm').dialog('close');
-     			     					    		                                    				}else{
-     			     					    		                                    					$('#<%=namespace%>tpconfirm').dialog('close');
- 			 	    					    		                                    		        	$('#<%=namespace%>error').dialog({
- 			 	    					                                 			        					title: '<liferay-ui:message key="error"/>',
- 			 	    					                                 			        			        modal: true,
- 			 	    					                                 			        			        width: screenWidth,
- 			 	    					                                 			        			        height:'auto',
- 			 	    					                                 			        			        resizable:false,
- 			 	    					                                 			        			        position: { my: "center", at: "center", of: window },
- 			 	    					                                 			        			        open: function(){
- 			 	    					                                 			        			        	$('#<%=namespace%>errordetail').html('<p>'+obj.status.message+'<p>')
- 			 	    					                                 			        			        	
- 			 	    					                                 			        			        },
- 			 	    					                                 			        			        buttons:[
- 			 	    					                                 			        			                 {
- 			 	    					                                 			        			                	id:'error',
- 			 	    					                                 			        	         			        text: '<liferay-ui:message key="confirm"/>', 
- 			 	    					                                 			        	         			        click: function() {
- 			 	    					                                 			        	         			        	
- 			 	    					                                 			        	         			        	$('#<%=namespace%>error').dialog('close');
- 			 	    					                                 			        	         			        }
- 			 	    					                                 			        			                 }
- 			 	    					                                 			        			                 
- 			 	    					                                 			        			                 ]
- 			 	    					                                 			        				})
-     			     					    		                                    				}
-     			     	     			     		          			        			        	   
-     			     					    		                                    			  })
-     			     					    		                
-     			     		          			        			        	 }
-     			     		          			        			         },
-     			     		          			        			         {
-     			     		          			        			        	 text:'<liferay-ui:message key="Cancel"/>',
-     			     		          			        			        	 click:function(){
-     			     		          			        			        		$('#<%=namespace%>tpconfirm').dialog('close');
-     			     		          			        			        	 }
-     			     		          			        			         }
-     			     		          			        			         
-     			     		          			        			         ]
-     			     		          			        		
-     			     		          			        			
-     			     		          			        		})
-     			     		   			    			     $(".ui-dialog-titlebar").css("background-color", "#61cc61");
-     			     		   	    		        	     $(".ui-dialog-title").css("color", "white");
-     			     		   	    		        	     $(".ui-dialog").css("position", "center");
-     			     		          			        	
-     			     		          			        }
-     			     		          			    },
+     			     		          		
      			     		          			  {
      			     		          				 text:'<liferay-ui:message key="edit"/>',
 			 	    		          			        click: function() { 
@@ -1144,14 +1321,17 @@
 		     			 		    		     	  	                   <tr><td>'+'<liferay-ui:message key="fullname"/>'+'<span style="color:red;margin:5px;">*</span>:</td><td><input type="text" id="fullname" value="'+data[6]+'"></td><td style="display:none" id="fullnamealert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
 		        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="email"/>'+':</td><td><input type="text" id="email" value="'+data[16]+'"></td></tr>\
 		        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="identity"/>'+'<span style="color:red;margin:5px;">*</span>:</td><td><input type="text" id="identity" value="'+data[4]+'"></td><td style="display:none" id="identityalert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
-		        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="addressLine1"/>'+':</td><td><input type="text" id="add1" value="'+data[7]+'"></td></tr>\
-		        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="addressLine2"/>'+':</td><td><input type="text" id="add2" value="'+data[12]+'"></td></tr>\
-		        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="addressLine3"/>'+':</td><td><input type="text" id="add3" value="'+data[13]+'"></td></tr>\
-		        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="city"/>'+':</td><td><input type="text" id="city" value="'+data[10]+'"></td></tr>\
-		        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="state"/>'+':</td><td><input type="text" id="state" value="'+data[9]+'"></td></tr>\
-		        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="zipCode"/>'+':</td><td><input type="text" id="zipcode" value="'+data[8]+'"></td></tr>\
-		        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="phone"/>'+':</td><td><input type="text" id="phone" value="'+data[11]+'"></td></tr>\
-		     			 		    	         	                   </table></div>')
+		        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine1"/>'+':</td><td><input type="text" id="add1" value="'+data[7]+'"></td></tr>\
+		        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine2"/>'+':</td><td><input type="text" id="add2" value="'+data[12]+'"></td></tr>\
+		        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine3"/>'+':</td><td><input type="text" id="add3" value="'+data[13]+'"></td></tr>\
+		        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="city"/>'+':</td><td><input type="text" id="city" value="'+data[10]+'"></td></tr>\
+		        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="state"/>'+':</td><td><input type="text" id="state" value="'+data[9]+'"></td></tr>\
+		        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="zipCode"/>'+':</td><td><input type="text" id="zipcode" value="'+data[8]+'"></td></tr>\
+		        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="phone"/>'+'<span class="phonemust" style="color:red;margin:5px;display:none">*</span>:</td><td><input type="text" id="phone" value="'+data[11]+'"></td><td style="display:none" id="phonealert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
+		     			 		    	         	                   </table></div>');
+		     			 		    		     	    	     if(data[17]=="UserAccount"){
+		     			 		    		     	    	    	 $('.phonemust').show();
+		     			 		    		     	    	     }
 		     			 		    		     	           },
 		 	    		          			        			buttons:[
 		 	    		          			        			         {
@@ -1183,10 +1363,24 @@
 		 	    		          			        			                       var newzipcode = $('#zipcode').val();
 		 	    		          			        			                    
 		 	    		          			        			                       var newphone = $('#phone').val();
-		 	    		          			        			                       var newidentitynum = $('#identitynum').val(); 
-		 	    		          			        			                    if(newfullname!=""&&newidentity!=""){
-		 	    		          			        			                    	   flag = true;
+		 	    		          			        			                       if(data[17]=="UserAccount"){
+		 	    		          			        			                    	 if(newphone==""){
+		 	    		          			        			                    		   $('#phonealert').show();
+		 	    		          			        			                    	   }else{
+		 	    		          			        			                    		$('#phonealert').hide();
+		 	    		          			        			                    	   }
 		 	    		          			        			                       }
+		 	    		          			        			                       var newidentitynum = $('#identitynum').val(); 
+		 	    		          			        			                    if(data[17]=="UserAccount"){
+		 	    		          			        			                    	if(newfullname!=""&&newidentity!=""&&newphone!=""){
+			 	    		          			        			                    	   flag = true;
+			 	    		          			        			                       }
+		 	    		          			        			                    }else{
+		 	    		          			        			                    	if(newfullname!=""&&newidentity!=""){
+			 	    		          			        			                    	   flag = true;
+			 	    		          			        			                       }
+		 	    		          			        			                    }
+		 	    		          			        			                   
 		 	    		          			        			                    if(flag){
 		 	    					    		                                      	Liferay.Service(
 		 	    					    		                                    			'/LmAccountServices-portlet.account/update-account-and-holder',
@@ -1294,6 +1488,107 @@
 		 	    		          			        	
 		 	    		          			        }
      			     		     	                 },
+     			     		     	      	    {   id:'delete',
+      			     		          			        text: '<liferay-ui:message key="Deletethisaccount"/>',
+      			     		          			        //open: function() { $(this).addClass('b') }, //will append a class called 'b' to the created 'OK' button.
+      			     		          			        click: function() { 
+      			     		          			        	
+      			     		          			       
+      			     		          			        	
+      			     		          			        		$('#<%=namespace%>TPTabledialog').dialog('close');
+      			     		          			        		$('#<%=namespace%>tpconfirm').dialog({
+      			     		          			        			title:'<liferay-ui:message key="delete"/>',
+      			     		          			        			modal: true,
+      			     		          			        			buttons:[
+      			     		          			        			         {
+      			     		          			        			        	 text:'<liferay-ui:message key="confirm"/>',
+      			     		          			        			        	 click:function(){
+      			     		          			        			        	     	    		          		
+      			     					    		                                     	Liferay.Service(
+      			     					    		                                    			'/LmAccountServices-portlet.account/update-account-and-holder',
+      			     					    		                                    			  {
+      			     					    		                                    				accountId: accountid,
+  			 	    					    		                                    			    accountName: accountname,
+  			 	    					    		                                    			    accountDetailObject: data[18],
+  			 	    					    		                                    			    identity:identity,
+  			 	    					    		                                    			    pmtType:pmtType,
+  			 	    					    		                                    			    activeFlag: 'N',
+  			 	    					    		                                    			    expDate:'',
+ 			 	    					    		                                    			    pwd:'',
+  			 	    					    		                                    			    fullName: fullName,
+  			 	    					    		                                    			    firstName: '',
+  			 	    					    		                                    			    lastName: '',
+  			 	    					    		                                    			    middleName: '',
+  			 	    					    		                                    			    email: email,
+  			 	    					    		                                    			    addressLine1: addressLine1,
+  			 	    					    		                                    			    addressLine2: addressLine2,
+  			 	    					    		                                    			    addressLine3: addressLine3,
+  			 	    					    		                                    			    city: city,
+  			 	    					    		                                    			    state: state,
+  			 	    					    		                                    			    zipCode: zipcode,
+  			 	    					    		                                    			    countryCd: countryCd,
+  			 	    					    		                                    			    phone: phone,
+  			 	    					    		                                    			    identityNum: "",
+  			 	    					    		                                    			    localeCd: "<%=langId %>"
+      			     					    		                                    			  },function(response){
+      			     					    		                                    				if(response.status.code==200){
+      			     					    		                                    					dataSet.splice(window.index, 1);
+ 			     	     			     					    		                                      for(var i=0;i<accountinfo.length;i++){
+ 			     	         			 	    					    		                            	  if(accountinfo[i].accountId==accountid){
+ 			     	         			 	    					    		                            		accountinfo.splice(i,1);
+ 			     	         			 	    					    		                            		break;
+ 			     	         			 	    					    		                            	  }
+ 			     	         			 	    					    		                              }
+ 			     	     			     					    		                                     	generateTPTable(dataSet);
+ 			     	     			     					    		                                     	$('#<%=namespace%>tpconfirm').dialog('close');
+      			     					    		                                    				}else{
+      			     					    		                                    					$('#<%=namespace%>tpconfirm').dialog('close');
+  			 	    					    		                                    		        	$('#<%=namespace%>error').dialog({
+  			 	    					                                 			        					title: '<liferay-ui:message key="error"/>',
+  			 	    					                                 			        			        modal: true,
+  			 	    					                                 			        			        width: screenWidth,
+  			 	    					                                 			        			        height:'auto',
+  			 	    					                                 			        			        resizable:false,
+  			 	    					                                 			        			        position: { my: "center", at: "center", of: window },
+  			 	    					                                 			        			        open: function(){
+  			 	    					                                 			        			        	$('#<%=namespace%>errordetail').html('<p>'+obj.status.message+'<p>')
+  			 	    					                                 			        			        	
+  			 	    					                                 			        			        },
+  			 	    					                                 			        			        buttons:[
+  			 	    					                                 			        			                 {
+  			 	    					                                 			        			                	id:'error',
+  			 	    					                                 			        	         			        text: '<liferay-ui:message key="confirm"/>', 
+  			 	    					                                 			        	         			        click: function() {
+  			 	    					                                 			        	         			        	
+  			 	    					                                 			        	         			        	$('#<%=namespace%>error').dialog('close');
+  			 	    					                                 			        	         			        }
+  			 	    					                                 			        			                 }
+  			 	    					                                 			        			                 
+  			 	    					                                 			        			                 ]
+  			 	    					                                 			        				})
+      			     					    		                                    				}
+      			     	     			     		          			        			        	   
+      			     					    		                                    			  })
+      			     					    		                
+      			     		          			        			        	 }
+      			     		          			        			         },
+      			     		          			        			         {
+      			     		          			        			        	 text:'<liferay-ui:message key="Cancel"/>',
+      			     		          			        			        	 click:function(){
+      			     		          			        			        		$('#<%=namespace%>tpconfirm').dialog('close');
+      			     		          			        			        	 }
+      			     		          			        			         }
+      			     		          			        			         
+      			     		          			        			         ]
+      			     		          			        		
+      			     		          			        			
+      			     		          			        		})
+      			     		   			    			     $(".ui-dialog-titlebar").css("background-color", "#61cc61");
+      			     		   	    		        	     $(".ui-dialog-title").css("color", "white");
+      			     		   	    		        	     $(".ui-dialog").css("position", "center");
+      			     		          			        	
+      			     		          			        }
+      			     		          			    },
      			     		          			  ]
      			     			    	 
      			     			    	 
@@ -1306,6 +1601,533 @@
      			 	    	
      			 	    	}
      			 	    };
+     			 	    
+     			 	    
+     function generateallTable(dataSet){
+			 		    	/* for(var i=0;i<dataSet.length;i++){
+			 		    	    dataSet[i][5]=<liferay-ui:message key="lm.remittance.paymentTypeThirdParty"/>
+			 		    	}  */  
+			 	    		/* $(".noneressend").css("display","none");
+			 	    		$("#<%=namespace%>SEND").css("display","block"); */
+			 	      	if ( $.fn.DataTable.isDataTable('#<%=namespace%>allTable') ) {
+			 	    		  $('#<%=namespace%>allTable').DataTable().destroy();
+			 	    		  
+			 			    	//console.log(dataSet);
+			 	    		}
+			 	      	if(dataSet.length==0){
+			 	    		 $("#<%=namespace%>all .noneres").show();
+			 	    	  	 $("#<%=namespace%>allTable").hide();
+			 	    	}else{
+			 	    		 $("#<%=namespace%>all .noneres").hide();
+			 	    	  	 $("#<%=namespace%>allTable").show();
+
+			 	    		var table = $('#<%=namespace%>allTable').DataTable({
+			 	    		/*     paging: false,
+			 	    		    retrieve: true,
+			 	 		       destory:true,
+			 	 		       responsive:false, */
+			 	 		      "responsive": true, 
+			 	 		   "iDisplayLength": 25,
+			                   //scrollCollapse: true,
+			 	 		     "bSort": false,
+			 	 		      "data":dataSet,
+			 	 		     "oLanguage" : {
+			 	                "sLengthMenu": "<liferay-ui:message key='LengthMenu'/>",
+		 		                "sZeroRecords": "<liferay-ui:message key='ZeroRecords'/>",
+		 		                "sInfo": "<liferay-ui:message key='Info'/>",
+		 		                "sInfoEmpty": "<liferay-ui:message key='InfoEmpty'/>",
+		 		                "sInfoFiltered": "<liferay-ui:message key='InfoFiltered'/>",
+		 		                 "sSearch": "<liferay-ui:message key='Search'/>",
+		 		                "oPaginate": {
+		 		                "sFirst": "<liferay-ui:message key='First'/>",
+		 		                "sPrevious": "<liferay-ui:message key='Previous'/>",
+		 		                "sNext": "<liferay-ui:message key='Next'/>",
+		 		                "sLast": "<liferay-ui:message key='Last'/>"
+			 	                 }
+			 	                 },
+			 	 		      "columnDefs": [ {
+			 	 	                "targets": -1,
+			 	 	                "data": null,
+			 	 	                "defaultContent": "<a class='deactive' style='cursor: pointer;'>"+'<liferay-ui:message key="View"/>'+"</a>"
+			 	 	                //"defaultContent": "<div><a href='#' class='view'>"+'<liferay-ui:message key="deactive"/>'+"</a></div>"
+			 	 	              }
+			 	 	                   ,{
+			 	 	                    "targets": [6],
+			 	 	                    "visible": true,
+			 	 	                    "searchable": false
+			 	 	                }   
+			 	 	                   ,{
+			 	 	                    "targets": [2],
+			 	 	                    "visible": false,
+			 	 	                    "searchable": false
+			 	 	                }       
+			 	 	                  ,{
+			 		 	                    "targets": [3,5,6,7,8,9,10,11,12,13,14,15,16,17],
+			 		 	                    "visible": false,
+			 		 	                    "searchable": false
+			 		 	                } 
+			 	 	               ]
+			 	 		    	})
+			 	    	$('#<%=namespace%>allTable tbody').off( 'click.rowClick' ).on( 'click.rowClick', '.deactive', function () 
+			 	    			{ 
+
+			                 var newindex=table.row($(this).closest('tr')).index();
+			                 if(newindex==undefined){
+			                	 newindex=table.row($(this).closest('tr').prev()).index();
+			                 }
+		                     var accountid = dataSet[newindex][1];
+		     			     var accountname = dataSet[newindex][0];
+		     			     var identity = dataSet[newindex][4];
+		     			     var fullName = dataSet[newindex][6];
+		     			     var email = dataSet[newindex][16];
+		     			     var addressLine1 = dataSet[newindex][7];
+		     			     var addressLine2 = dataSet[newindex][12];
+		     			     var addressLine3 = dataSet[newindex][13];
+		     			     var city = dataSet[newindex][10];
+		     			     var state = dataSet[newindex][9];
+		     			     var zipcode = dataSet[newindex][8];
+		     			     var countryCd = dataSet[newindex][14];
+		     			     var phone = dataSet[newindex][11];
+		     			     var identityNum = dataSet[newindex][15];
+		     			     var currencyCd = dataSet[newindex][2];
+                           var pmtType = dataSet[newindex][5];
+                           var detail = dataSet[newindex][18];
+                           if(dataSet[newindex][18]!=""){
+                               var detail = eval('('+dataSet[newindex][18].replace(/=/g,":")+')');
+                              //var routing = dataSet[newindex][18].match(/routingNumber=\'([0-9]+)/);
+                            
+                              	var BankBranch = detail.bankBranch;
+                              	var routing = detail.routingNumber;
+                              
+                              	
+                              
+                           }else{
+                           	var BankBranch = "";
+                           	var routing = "";
+                           }
+                           
+                           
+			                 window.index=newindex;
+			                 
+			                 var data=dataSet[window.index];
+			                 
+			                         if($(window).width()>600){
+			                       	  var screenWidth = '500px';
+			                         }else{
+			                       	  var screenWidth = '300px';
+			                         }
+			                         $('#<%=namespace%>allTabledialog').dialog({
+			     		    	        title: '<liferay-ui:message key="details"/>',
+			     		     	        modal: true,
+			     		     	        width: screenWidth,
+			     		     	        height:'auto',
+			     		     	        resizable:false,
+			     		     	        position: { my: "center", at: "center", of: window },
+			     		     	       open: function(){
+			 	    		     	    	  $('#<%=namespace%>allTabledetail').html('<div class="sendtable"><table>\
+			 	    		     	    			<tr><td>'+'<liferay-ui:message key="accountName"/>'+':</td><td>'+data[0]+'</td></tr>\
+		 		    	         	               <tr><td>'+'<liferay-ui:message key="currencyCd"/>'+':</td><td>'+data[2]+'</td></tr>\
+		 		    	  	  	                   <tr><td>'+'<liferay-ui:message key="fullname"/>'+':</td><td>'+data[6]+'</td></tr>\
+		 		    	         	                   <tr><td>'+'<liferay-ui:message key="email"/>'+':</td><td>'+data[16]+'</td></tr>\
+		 		    	         	                   <tr><td>'+'<liferay-ui:message key="identity"/>'+':</td><td>'+data[4]+'</td></tr>\
+		 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine1"/>'+':</td><td>'+data[7]+'</td></tr>\
+		 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine2"/>'+':</td><td>'+data[12]+'</td></tr>\
+		 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine3"/>'+':</td><td>'+data[13]+'</td></tr>\
+		 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="city"/>'+':</td><td>'+data[10]+'</td></tr>\
+		 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="state"/>'+':</td><td>'+data[9]+'</td></tr>\
+		 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="zipCode"/>'+':</td><td>'+data[8]+'</td></tr>\
+		 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="countryCd"/>'+':</td><td>'+data[14]+'</td></tr>\
+		 		    	         	                   <tr><td>'+'<liferay-ui:message key="phone"/>'+':</td><td>'+data[11]+'</td></tr>\
+		 		    	         	                   <tr class="cn" style="display:none"><td>'+'<liferay-ui:message key="bankBranch"/>'+':</td><td>'+BankBranch+'</td></tr>\
+		 		    	         	                   <tr class="usa" style="display:none"><td>'+'<liferay-ui:message key="routing"/>'+':</td><td>'+routing+'</td></tr>\
+			 	    	         	                   </table></div>');
+			 	    		     	    	  if(currencyCd=="USD"&&data[5]=="BankAccount"){
+			 	    		     	    		  $('.cn').hide();
+			 	    		     	    		  $('.usa').show();
+			 	    		     	    	  }
+			 	    		     	    	  if(currencyCd=="CNY"){
+			 	    		     	    		  $('.cn').show();
+			 	    		     	    		  $('.usa').hide();
+			 	    		     	    	  }
+			 	    		     	    	 
+			 	    		     	       },
+			     		     	       buttons: [
+			     		     	              
+			     		          			
+			     		          			  {
+			     		          				 text:'<liferay-ui:message key="edit"/>',
+		 	    		          			        click: function() { 
+		 	    		    
+	 	    		          			        		$('#<%=namespace%>allTabledialog').dialog('close');
+	 	    		          			        		$('#<%=namespace%>editinfo').dialog({
+	 	    		          			        			
+	 	    		          			        			title:'<liferay-ui:message key="edit"/>',
+	 	    		          			        		    modal: true,
+	 	     			 	    		     	            width: screenWidth,
+	 	     			 	    		     	            height:'auto',
+	 	     			 	    		     	             resizable:false,
+	 	     			 	    		     	             position: { my: "center", at: "center", of: window },
+	 	    		          			      	            open: function(){
+	     			 		    		     	    	        $('#<%=namespace%>editinfodetail').html('<div ><table>\
+	     			 		    		     	  	                   <tr><td>'+'<liferay-ui:message key="fullname"/>'+'<span style="color:red;margin:5px;">*</span>:</td><td><input type="text" id="fullname" value="'+data[6]+'"></td><td style="display:none" id="fullnamealert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
+	        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="email"/>'+':</td><td><input type="text" id="email" value="'+data[16]+'"></td></tr>\
+	        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="identity"/>'+'<span style="color:red;margin:5px;">*</span>:</td><td><input type="text" id="identity" value="'+data[4]+'"></td><td style="display:none" id="identityalert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
+	        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine1"/>'+':</td><td><input type="text" id="add1" value="'+data[7]+'"></td></tr>\
+	        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine2"/>'+':</td><td><input type="text" id="add2" value="'+data[12]+'"></td></tr>\
+	        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine3"/>'+':</td><td><input type="text" id="add3" value="'+data[13]+'"></td></tr>\
+	        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="city"/>'+':</td><td><input type="text" id="city" value="'+data[10]+'"></td></tr>\
+	        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="state"/>'+':</td><td><input type="text" id="state" value="'+data[9]+'"></td></tr>\
+	        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="zipCode"/>'+':</td><td><input type="text" id="zipcode" value="'+data[8]+'"></td></tr>\
+	        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="phone"/>'+'<span class="phonemust" style="color:red;margin:5px;display:none">*</span>:</td><td><input type="text" id="phone" value="'+data[11]+'"></td><td style="display:none" id="phonealert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
+	        			 		    	         	                   <tr class="cn" style="display:none"><td>'+'<liferay-ui:message key="bankBranch"/>'+'<span class="cnmust" style="color:red;margin:5px;display:none">*</span>:</td><td><input type="text" id="bb" value="'+BankBranch+'"></td><td style="display:none" id="bbalert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
+	        			 		    	         	                   <tr class="usa" style="display:none" ><td>'+'<liferay-ui:message key="routing"/>'+'<span class="usmust" style="color:red;margin:5px;display:none">*</span>:</td><td><input onkeydown="return (event.which >= 48 && event.which <= 57)|| event.which == 8" type="text" id="routnum" value="'+routing+'"></td><td style="display:none" id="routnumalert"><p style="color:red"><liferay-ui:message key="wrongformat"/></p><td></tr>\
+	     			 		    	         	                   </table></div>');
+	     			 		    		     	    	     if(currencyCd=="USD"&&data[5]=="BankAccount"){
+	     					 	    		     	    		  $('.cn').hide();
+	     					 	    		     	    		  $('.usa').show();
+	     					 	    		     	    	  }
+	     					 	    		     	    		  if(currencyCd=="CNY"){
+	     					 	    		     	    		  $('.cn').show();
+	     					 	    		     	    		  $('.usa').hide();
+	     					 	    		     	    		$('.usmust').hide();
+	     			 		    		     	    	    	$('.cnmust').show();
+	     					 	    		     	    	  }
+	     			 		    		     	    	     if(currencyCd=="USD"&&data[5]=="BankAccount"&&data[17]=="RecipientAccount"){
+	     			 		    		     	    	    	$('.usmust').show();
+	     			 		    		     	    	    	$('.cnmust').hide();
+	     			 		    		     	    	     }
+	     			 		    		     	    	     if(data[17]=="UserAccount"){
+	     			 		    		     	    	    	 $('.phonemust').show();
+	     			 		    		     	    	     }
+	     			 		    		     	           },
+	 	    		          			        			buttons:[
+	 	    		          			        			         {
+	 	    		          			        			        	 text:'<liferay-ui:message key="save"/>',
+	 	    		          			        			        	 click:function(){
+	 	    		          			        			        		 var flag = false;
+	 	    		          			        			        	     	   var newfullname = $('#fullname').val();
+	 	    		          			        			        	        if(newfullname==""){
+	 	    		          			        			        	     		   $('#fullnamealert').css('display','block');
+	 	    		          			        			        	     	   }else{
+	 	    		          			        			        	     		$('#fullnamealert').css('display','none');
+	 	    		          			        			        	     	   }
+	 	    		          			        			        	     	   var newemail = $('#email').val();
+	 	    		          			        			        	       
+	 	    		          			        			        	           var newadd1 = $('#add1').val();
+	 	    		          			        			        	       
+	 	    		          			        			        	           var newidentity = $('#identity').val();
+	 	    		          			        			        	        if(newidentity==""){
+	 	    		          			        			        	     		   $('#identityalert').css('display','block');
+	 	    		          			        			        	     	   }else{
+	 	    		          			        			        	     		$('#identityalert').css('display','none');
+	 	    		          			        			        	     	   }
+	 	    		          			        			        	        if(currencyCd=="USD"&&data[5]=="BankAccount"){
+	 	    		          			        			        	        	if(!($('#routnum').val().match(/^\d+$/))){
+	 	    		          			        			        	        		$('#routnumalert').css('display','block');
+	 	    		          			        			        	        		
+	 	    		          			        			        	        	}else{
+	 	    		          			        			        	        		$('#routnumalert').css('display','none');
+	 	    		          			        			        	        	}
+	 	    		          			        			        	        }
+	 	    		          			        			        	           var newadd2 = $('#add2').val();
+	 	    		          			        			        	           var newadd3 = $('#add3').val();
+	 	    		          			        			        	           var newcity = $('#city').val();
+	 	    		          			        			        	        
+	 	    		          			        			        	           var newstate = $('#state').val();
+	 	    		          			        			        	        
+	 	    		          			        			                       var newzipcode = $('#zipcode').val();
+	 	    		          			        			                    
+	 	    		          			        			                       var newphone = $('#phone').val();
+	 	    		                                                               if(data[17]=="UserAccount"){
+	 	    		                                                            	  if(newphone==""){
+	 	    		          			        			                    		   $('#phonealert').show();
+	 	    		          			        			                    	   }else{
+	 	    		          			        			                    		$('#phonealert').hide();
+	 	    		          			        			                    	   }
+	 	    		                                                               }
+	 	    		          			        			                    	   
+	 	    		          			        			               
+	 	    		          			        			                      var newidentitynum = $('#identitynum').val(); 
+	 	    		          			        			                    
+	 	    		          			        			                    var oldbankbranch = "bankBranch='"+BankBranch+"'";
+	    		          			        			                         var newbankbranch = "bankBranch='"+ $('#bb').val()+"'";
+	    		          			        			                         var oldrouting = "routingNumber='"+routing+"'";
+	    		          			        			                         var newrouting = "routingNumber='"+ $('#routnum').val()+"'";
+	    		          			        			                      
+	    		          			        			                       if(currencyCd=="CNY"){
+	    		          			        			                    	 if(data[18]!=""){
+	 	    		          			        			                    	var newdetail = data[18].replace(oldbankbranch,newbankbranch);
+	 	    		          			        			                       }else{
+	 	    		          			        			                    	var newdetail = "{"+newbankbranch+"}";
+	 	    		          			        			                       }
+	    		          			        			                    	  if($('#bb').val()==""){
+		    		          			        			        	     		   $('#bbalert').css('display','block');
+		    		          			        			        	     	   }else{
+		    		          			        			        	     		$('#bbalert').css('display','none');
+		    		          			        			        	     	   }
+	    		          			        			                       }else if(currencyCd=="USD"){
+	    		          			        			                    	 if(data[18]!=""){
+		 	    		          			        			                    	var newdetail = data[18].replace(oldrouting,newrouting);
+		 	    		          			        			                       }else{
+		 	    		          			        			                    	var newdetail = "{"+newrouting+"}";
+		 	    		          			        			                       }
+	    		          			        			                       }
+	    		          			        			                  
+	    		          			        			                       if(currencyCd=="CNY"&&data[17]=="UserAccount"){
+	    		          			        			                    	 if(newfullname!=""&&newidentity!=""&&newphone!=""&&$('#bb').val()!=""){
+		    		          			        			                    	   flag = true;
+		    		          			        			                       }
+	    		          			        			                       }
+	    		          			        			                       if(currencyCd=="CNY"&&data[17]=="RecipientAccount"){
+	    		          			        			                    	 if(newfullname!=""&&newidentity!=""&&$('#bb').val()!=""){
+		    		          			        			                    	   flag = true;
+		    		          			        			                       }
+	    		          			        			                       }
+	    		          			        			                       if(currencyCd=="USD"&&data[5]=="BankAccount"&&data[17]=="UserAccount"){
+	    		          			        			                    	 if(newfullname!=""&&newidentity!=""&&($('#routnum').val().match(/^\d+$/))&&newphone!=""){
+		    		          			        			                    	   flag = true;
+		    		          			        			                       }
+	    		          			        			                       }
+	    		          			        			                     if(currencyCd=="USD"&&data[5]=="BankAccount"&&data[17]=="RecipientAccount"){
+	    		          			        			                    	 if(newfullname!=""&&newidentity!=""&&($('#routnum').val().match(/^\d+$/))){
+		    		          			        			                    	   flag = true;
+		    		          			        			                       }
+	    		          			        			                       }
+	    		          			        			                      if(currencyCd=="USD"&&data[5]=="ThirdParty"&&data[17]=="UserAccount"){
+	    		          			        			                    	 if(newfullname!=""&&newidentity!=""&&newphone!=""){
+		    		          			        			                    	   flag = true;
+		    		          			        			                       }
+	    		          			        			                       }
+	    		          			        			                    if(currencyCd=="USD"&&data[5]=="ThirdParty"&&data[17]=="RecipientAccount"){
+	    		          			        			                    	 if(newfullname!=""&&newidentity!=""){
+		    		          			        			                    	   flag = true;
+		    		          			        			                       }
+	    		          			        			                       }
+	    		          			        			                     
+	 	    		          			        			                    if(flag){
+	 	    					    		                                      	Liferay.Service(
+	 	    					    		                                    			'/LmAccountServices-portlet.account/update-account-and-holder',
+	 	    					    		                                    			  {
+	 	    					    		                                    				accountId: accountid,
+	 	    					    		                                    			    accountName: accountname,
+	 	    					    		                                    			    accountDetailObject: newdetail,
+	 	    					    		                                    			    identity:newidentity,
+	 	    					    		                                    			    pmtType:pmtType,
+	 	    					    		                                    			    activeFlag: 'Y',
+	 	    					    		                                    			    expDate:'',
+	 	    					    		                                    			    pwd:'',
+	 	    					    		                                    			    fullName: newfullname,
+	 	    					    		                                    			    firstName: '',
+	 	    					    		                                    			    lastName: '',
+	 	    					    		                                    			    middleName: '',
+	 	    					    		                                    			    email: newemail,
+	 	    					    		                                    			    addressLine1: newadd1,
+	 	    					    		                                    			    addressLine2: newadd2,
+	 	    					    		                                    			    addressLine3: newadd3,
+	 	    					    		                                    			    city: newcity,
+	 	    					    		                                    			    state: newstate,
+	 	    					    		                                    			    zipCode: newzipcode,
+	 	    					    		                                    			    countryCd: countryCd,
+	 	    					    		                                    			    phone: newphone,
+	 	    					    		                                    			    identityNum: "",
+	 	    					    		                                    			    localeCd: "<%=langId %>"
+	 	    					    		                                    			  },function(response){
+	 	    					    		                                    				  //console.log(response);
+	 	    					    		                                    				 //location.reload(true);
+	 	    					    		                                    				 if(response.status.code==200){
+	 	    					    		                                    				    dataSet[newindex][4] = newidentity;
+			 	    					    		                  			     			     dataSet[newindex][6] = newfullname;
+			 	    					    		                  			     			     dataSet[newindex][16] = newemail;
+			 	    					    		                  			     			     dataSet[newindex][7] = newadd1;
+			 	    					    		                  			     			     dataSet[newindex][12] = newadd2;
+			 	    					    		                  			     			     dataSet[newindex][13] = newadd3;
+			 	    					    		                  			     			     dataSet[newindex][10] = newcity;
+			 	    					    		                  			     			     dataSet[newindex][9] = newstate;
+			 	    					    		                  			     			     dataSet[newindex][8] = newzipcode;
+			 	    					    		                  			     			     dataSet[newindex][11] = newphone;
+			 	    					    		                  			     			     dataSet[newindex][18] = newdetail;
+			 	      			 	    					    		                              for(var i=0;i<accountinfo.length;i++){
+			 	      			 	    					    		                            	  if(accountinfo[i].accountId==accountid){
+			 	      			 	    					    		                            	   accountinfo[i].identity = newidentity;
+			 	      			 	    					    		                            	   accountinfo[i].fullName = newfullname;
+			 	      			 	    					    		                            	   accountinfo[i].email = newemail;
+			 	      			 	    					    		                            	   accountinfo[i].addressLine1 = newadd1;
+			 	      			 	    					    		                            	   accountinfo[i].addressLine2 = newadd2;
+			 	      			 	    					    		                            	   accountinfo[i].addressLine3 = newadd3;
+			 	      			 	    					    		                            	   accountinfo[i].city = newcity;
+			 	      			 	    					    		                                   accountinfo[i].state = newstate;
+			 	      			 	    					    		                                   accountinfo[i].zipCode = newzipcode;
+			 	      			 	    					    		                                   accountinfo[i].phone = newphone;  
+			 	      			 	    					    		                                   accountinfo[i].detailJSON = newdetail;
+			 	      			 	    					    		                                   break;
+			 	      			 	    					    		                            	  }
+			 	      			 	    					    		                              }
+			 	      			 	    					    		                               generateallTable(dataSet);
+			 	      			 	    		          			        			        		$('#<%=namespace%>editinfo').dialog('close'); 
+	 	    					    		                                    				 }else{
+	 	    					    		                                    					$('#<%=namespace%>editinfo').dialog('close');
+		 	    					    		                                    		        	$('#<%=namespace%>error').dialog({
+		 	    					                                 			        					title: '<liferay-ui:message key="error"/>',
+		 	    					                                 			        			        modal: true,
+		 	    					                                 			        			        width: screenWidth,
+		 	    					                                 			        			        height:'auto',
+		 	    					                                 			        			        resizable:false,
+		 	    					                                 			        			        position: { my: "center", at: "center", of: window },
+		 	    					                                 			        			        open: function(){
+		 	    					                                 			        			        	$('#<%=namespace%>errordetail').html('<p>'+obj.status.message+'<p>')
+		 	    					                                 			        			        	
+		 	    					                                 			        			        },
+		 	    					                                 			        			        buttons:[
+		 	    					                                 			        			                 {
+		 	    					                                 			        			                	id:'error',
+		 	    					                                 			        	         			        text: '<liferay-ui:message key="confirm"/>', 
+		 	    					                                 			        	         			        click: function() {
+		 	    					                                 			        	         			        	
+		 	    					                                 			        	         			        	$('#<%=namespace%>error').dialog('close');
+		 	    					                                 			        	         			        }
+		 	    					                                 			        			                 }
+		 	    					                                 			        			                 
+		 	    					                                 			        			                 ]
+		 	    					                                 			        				})
+	 	    					    		                                    				 }
+	 	    					    		                  			     		 	 
+	 	    					    		                                    				  
+	 	    					    		                                    			  }) } 
+	 	    					    		                                   	 	    					    		          		
+	 	    		          			        			        	 }
+	 	    		          			        			         },
+	 	    		          			        			         {
+	 	    		          			        			        	 text:'<liferay-ui:message key="Cancel"/>',
+	 	    		          			        			        	 click:function(){
+	 	    		          			        			        		$('#<%=namespace%>editinfo').dialog('close');
+	 	    		          			        			        	 }
+	 	    		          			        			         }
+	 	    		          			        			         
+	 	    		          			        			         ]
+	 	    		          			        		
+	 	    		          			        			
+	 	    		          			        		})
+	 	    		   			    			     $(".ui-dialog-titlebar").css("background-color", "#61cc61");
+	 	    		   	    		        	     $(".ui-dialog-title").css("color", "white");
+	 	    		   	    		        	     $(".ui-dialog").css("position", "center");
+	 	    		          			        	
+	 	    		          			        }
+			     		     	                 },
+			     		     	               {   id:'delete',
+				     		          			        text: '<liferay-ui:message key="Deletethisaccount"/>',
+				     		          			        //open: function() { $(this).addClass('b') }, //will append a class called 'b' to the created 'OK' button.
+				     		          			        click: function() { 
+				     		          			        	
+				     		          			       
+				     		          			        	
+				     		          			        		$('#<%=namespace%>allTabledialog').dialog('close');
+				     		          			        		$('#<%=namespace%>allconfirm').dialog({
+				     		          			        			title:'<liferay-ui:message key="delete"/>',
+				     		          			        			modal: true,
+				     		          			        			buttons:[
+				     		          			        			         {
+				     		          			        			        	 text:'<liferay-ui:message key="confirm"/>',
+				     		          			        			        	 click:function(){
+				     		          			        			        	     	    		          		
+				     					    		                                     	Liferay.Service(
+				     					    		                                    			'/LmAccountServices-portlet.account/update-account-and-holder',
+				     					    		                                    			  {
+				     					    		                                    				accountId: accountid,
+			 	    					    		                                    			    accountName: accountname,
+			 	    					    		                                    			    accountDetailObject: data[18],
+			 	    					    		                                    			    identity:identity,
+			 	    					    		                                    			    pmtType:pmtType,
+			 	    					    		                                    			    activeFlag: 'N',
+			 	    					    		                                    			    expDate:'',
+			 	    					    		                                    			    pwd:'',
+			 	    					    		                                    			    fullName: fullName,
+			 	    					    		                                    			    firstName: '',
+			 	    					    		                                    			    lastName: '',
+			 	    					    		                                    			    middleName: '',
+			 	    					    		                                    			    email: email,
+			 	    					    		                                    			    addressLine1: addressLine1,
+			 	    					    		                                    			    addressLine2: addressLine2,
+			 	    					    		                                    			    addressLine3: addressLine3,
+			 	    					    		                                    			    city: city,
+			 	    					    		                                    			    state: state,
+			 	    					    		                                    			    zipCode: zipcode,
+			 	    					    		                                    			    countryCd: countryCd,
+			 	    					    		                                    			    phone: phone,
+			 	    					    		                                    			    identityNum: "",
+			 	    					    		                                    			    localeCd: "<%=langId %>"
+				     					    		                                    			  },function(response){
+				     					    		                                    				if(response.status.code==200){
+				     					    		                                    					dataSet.splice(window.index, 1);
+			     	     			     					    		                                      for(var i=0;i<accountinfo.length;i++){
+			     	         			 	    					    		                            	  if(accountinfo[i].accountId==accountid){
+			     	         			 	    					    		                            		accountinfo.splice(i,1);
+			     	         			 	    					    		                            		break;
+			     	         			 	    					    		                            	  }
+			     	         			 	    					    		                              }
+			     	     			     					    		                                     	generateallTable(dataSet);
+			     	     			     					    		                                     	$('#<%=namespace%>allconfirm').dialog('close');
+				     					    		                                    				}else{
+				     					    		                                    					$('#<%=namespace%>allconfirm').dialog('close');
+			 	    					    		                                    		        	$('#<%=namespace%>error').dialog({
+			 	    					                                 			        					title: '<liferay-ui:message key="error"/>',
+			 	    					                                 			        			        modal: true,
+			 	    					                                 			        			        width: screenWidth,
+			 	    					                                 			        			        height:'auto',
+			 	    					                                 			        			        resizable:false,
+			 	    					                                 			        			        position: { my: "center", at: "center", of: window },
+			 	    					                                 			        			        open: function(){
+			 	    					                                 			        			        	$('#<%=namespace%>errordetail').html('<p>'+obj.status.message+'<p>')
+			 	    					                                 			        			        	
+			 	    					                                 			        			        },
+			 	    					                                 			        			        buttons:[
+			 	    					                                 			        			                 {
+			 	    					                                 			        			                	id:'error',
+			 	    					                                 			        	         			        text: '<liferay-ui:message key="confirm"/>', 
+			 	    					                                 			        	         			        click: function() {
+			 	    					                                 			        	         			        	
+			 	    					                                 			        	         			        	$('#<%=namespace%>error').dialog('close');
+			 	    					                                 			        	         			        }
+			 	    					                                 			        			                 }
+			 	    					                                 			        			                 
+			 	    					                                 			        			                 ]
+			 	    					                                 			        				})
+				     					    		                                    				}
+				     	     			     		          			        			        	   
+				     					    		                                    			  })
+				     					    		                
+				     		          			        			        	 }
+				     		          			        			         },
+				     		          			        			         {
+				     		          			        			        	 text:'<liferay-ui:message key="Cancel"/>',
+				     		          			        			        	 click:function(){
+				     		          			        			        		$('#<%=namespace%>allconfirm').dialog('close');
+				     		          			        			        	 }
+				     		          			        			         }
+				     		          			        			         
+				     		          			        			         ]
+				     		          			        		
+				     		          			        			
+				     		          			        		})
+				     		   			    			     $(".ui-dialog-titlebar").css("background-color", "#61cc61");
+				     		   	    		        	     $(".ui-dialog-title").css("color", "white");
+				     		   	    		        	     $(".ui-dialog").css("position", "center");
+				     		          			        	
+				     		          			        }
+				     		          			    },
+			     		          			  ]
+			     			    	 
+			     			    	 
+			     			     });
+			                	     $(".ui-dialog-titlebar").css("background-color", "#61cc61");
+			 	        	     $(".ui-dialog-title").css("color", "white");
+			 	        	     $(".ui-dialog").css("position", "center");
+			 	    			   
+			 	    			});
+			 	    	
+			 	    	}
+			 	    };
+			 	    
+			 	    
   function generateDCTable(dataSet){
 	  //console.log('createdc');
                
@@ -1389,7 +2211,7 @@
 		     			     var countryCd = dataSet[newindex][14];
 		     			     var phone = dataSet[newindex][11];
 		     			     var identityNum = dataSet[newindex][15];
-                             var pmtType = dataSet[newindex][17];
+                             var pmtType = dataSet[newindex][5];
                             if(dataSet[newindex][18]!=""){
                                 var detail = eval('('+dataSet[newindex][18].replace(/=/g,":")+')');
                                var routing = dataSet[newindex][18].match(/routingNumber=\'([0-9]+)/);
@@ -1428,13 +2250,13 @@
 			 		    	  	  	                   <tr><td>'+'<liferay-ui:message key="fullname"/>'+':</td><td>'+data[6]+'</td></tr>\
 		 		    	         	                   <tr><td>'+'<liferay-ui:message key="email"/>'+':</td><td>'+data[16]+'</td></tr>\
 		 		    	         	                   <tr><td>'+'<liferay-ui:message key="identity"/>'+':</td><td>'+data[4]+'</td></tr>\
-		 		    	         	                   <tr><td>'+'<liferay-ui:message key="addressLine1"/>'+':</td><td>'+data[7]+'</td></tr>\
-		 		    	         	                   <tr><td>'+'<liferay-ui:message key="addressLine2"/>'+':</td><td>'+data[12]+'</td></tr>\
-		 		    	         	                   <tr><td>'+'<liferay-ui:message key="addressLine3"/>'+':</td><td>'+data[13]+'</td></tr>\
-		 		    	         	                   <tr><td>'+'<liferay-ui:message key="city"/>'+':</td><td>'+data[10]+'</td></tr>\
-		 		    	         	                   <tr><td>'+'<liferay-ui:message key="state"/>'+':</td><td>'+data[9]+'</td></tr>\
-		 		    	         	                   <tr><td>'+'<liferay-ui:message key="zipCode"/>'+':</td><td>'+data[8]+'</td></tr>\
-		 		    	         	                   <tr><td>'+'<liferay-ui:message key="countryCd"/>'+':</td><td>'+data[14]+'</td></tr>\
+		 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine1"/>'+':</td><td>'+data[7]+'</td></tr>\
+		 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine2"/>'+':</td><td>'+data[12]+'</td></tr>\
+		 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine3"/>'+':</td><td>'+data[13]+'</td></tr>\
+		 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="city"/>'+':</td><td>'+data[10]+'</td></tr>\
+		 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="state"/>'+':</td><td>'+data[9]+'</td></tr>\
+		 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="zipCode"/>'+':</td><td>'+data[8]+'</td></tr>\
+		 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="countryCd"/>'+':</td><td>'+data[14]+'</td></tr>\
 		 		    	         	                   <tr><td>'+'<liferay-ui:message key="phone"/>'+':</td><td>'+data[11]+'</td></tr>\
                                                        <tr><td>'+'<liferay-ui:message key="bankBranch"/>'+':</td><td>'+BankBranch+'</td></tr>\
      			 	         	                   </table></div>')
@@ -1442,107 +2264,7 @@
      			     		     	       },
      			 		     	       buttons: [
      			 		     	              
-     			 		          			    {   id:'delete',
-     			 		          			        text: '<liferay-ui:message key="Deletethisaccount"/>',
-     			 		          			        //open: function() { $(this).addClass('b') }, //will append a class called 'b' to the created 'OK' button.
-     			 		          			        click: function() { 
-     			 		          			       
-     			 		          			        		$('#<%=namespace%>DCTabledialog').dialog('close');
-     			 		          			        		$('#<%=namespace%>dcconfirm').dialog({
-     			 		          			        			title:'<liferay-ui:message key="delete"/>',
-     			 		          			        			modal: true,
-     			 		          			        			buttons:[
-     			 		          			        			         {
-     			 		          			        			        	 text:'<liferay-ui:message key="confirm"/>',
-     			 		          			        			        	 click:function(){
-     			 		          			        			        	     	    		          		
-     			 					    		                                     	 Liferay.Service(
-     			 					    		                                    			'/LmAccountServices-portlet.account/update-account-and-holder',
-     			 					    		                                    			  {
-     			 					    		                                    				    accountId: accountid,
-			 	    					    		                                    			    accountName: accountname,
-			 	    					    		                                    			    accountDetailObject: detail,
-			 	    					    		                                    			    identity:identity,
-			 	    					    		                                    			    pmtType:pmtType,
-			 	    					    		                                    			    activeFlag: 'N',
-			 	    					    		                                    			    expDate:'',
-		 	    					    		                                    			        pwd:'',
-			 	    					    		                                    			    fullName: fullName,
-			 	    					    		                                    			    firstName: '',
-			 	    					    		                                    			    lastName: '',
-			 	    					    		                                    			    middleName: '',
-			 	    					    		                                    			    email: email,
-			 	    					    		                                    			    addressLine1: addressLine1,
-			 	    					    		                                    			    addressLine2: addressLine2,
-			 	    					    		                                    			    addressLine3: addressLine3,
-			 	    					    		                                    			    city: city,
-			 	    					    		                                    			    state: state,
-			 	    					    		                                    			    zipCode: zipcode,
-			 	    					    		                                    			    countryCd: countryCd,
-			 	    					    		                                    			    phone: phone,
-			 	    					    		                                    			    identityNum: "",
-			 	    					    		                                    			    localeCd: "<%=langId %>"
-     			 					    		                                    			  },function(response){
-     			 					    		                                    				if(response.status.code==200){
-     			 					    		                                    					dataSet.splice(window.index, 1);
-			 		     			 					    		                                      for(var i=0;i<accountinfo.length;i++){
-			 		     			 	    					    		                            	  if(accountinfo[i].accountId==accountid){
-			 		     			 	    					    		                            		accountinfo.splice(i,1);
-			 		     			 	    					    		                            		break;
-			 		     			 	    					    		                            	  }
-			 		     			 	    					    		                              }
-			 		     			 					    		                                   generateDCTable(dataSet);
-			 		     			 					    		                                   $('#<%=namespace%>dcconfirm').dialog('close');
-     			 					    		                                    				}else{
-     			 					    		                                    					$('#<%=namespace%>dcconfirm').dialog('close');
-		 	    					    		                                    		        	$('#<%=namespace%>error').dialog({
-		 	    					                                 			        					title: '<liferay-ui:message key="error"/>',
-		 	    					                                 			        			        modal: true,
-		 	    					                                 			        			        width: screenWidth,
-		 	    					                                 			        			        height:'auto',
-		 	    					                                 			        			        resizable:false,
-		 	    					                                 			        			        position: { my: "center", at: "center", of: window },
-		 	    					                                 			        			        open: function(){
-		 	    					                                 			        			        	$('#<%=namespace%>errordetail').html('<p>'+obj.status.message+'<p>')
-		 	    					                                 			        			        	
-		 	    					                                 			        			        },
-		 	    					                                 			        			        buttons:[
-		 	    					                                 			        			                 {
-		 	    					                                 			        			                	id:'error',
-		 	    					                                 			        	         			        text: '<liferay-ui:message key="confirm"/>', 
-		 	    					                                 			        	         			        click: function() {
-		 	    					                                 			        	         			        	
-		 	    					                                 			        	         			        	$('#<%=namespace%>error').dialog('close');
-		 	    					                                 			        	         			        }
-		 	    					                                 			        			                 }
-		 	    					                                 			        			                 
-		 	    					                                 			        			                 ]
-		 	    					                                 			        				})
-     			 					    		                                    				}
-     			 		     			 		          			        			        	   
-     			 					    		                                    				  
-     			 					    		                                    			  }) 
-     			 					    		                                    			  
-     			 					    		                         
-     			 		          			        			        	 }
-     			 		          			        			         },
-     			 		          			        			         {
-     			 		          			        			        	 text:'<liferay-ui:message key="Cancel"/>',
-     			 		          			        			        	 click:function(){
-     			 		          			        			        		$('#<%=namespace%>dcconfirm').dialog('close');
-     			 		          			        			        	 }
-     			 		          			        			         }
-     			 		          			        			         
-     			 		          			        			         ]
-     			 		          			        		
-     			 		          			        			
-     			 		          			        		})
-     			 		   			    			     $(".ui-dialog-titlebar").css("background-color", "#61cc61");
-     			 		   	    		        	     $(".ui-dialog-title").css("color", "white");
-     			 		   	    		        	     $(".ui-dialog").css("position", "center");
-     			 		          			        	
-     			 		          			        }
-     			 		          			    },
+     			 		          		
      			 		          			  {
      			 		          				 text:'<liferay-ui:message key="edit"/>',
 		 	    		          			        click: function() { 
@@ -1561,13 +2283,13 @@
 	     			 		    		     	  	                   <tr><td>'+'<liferay-ui:message key="fullname"/>'+'<span style="color:red;margin:5px;">*</span>:</td><td><input type="text" id="fullname" value="'+data[6]+'"></td><td style="display:none" id="fullnamealert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
 	        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="email"/>'+':</td><td><input type="text" id="email" value="'+data[16]+'"></td></td></tr>\
 	        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="identity"/>'+'<span style="color:red;margin:5px;">*</span>:</td><td><input type="text" id="identity" value="'+data[4]+'"></td><td style="display:none" id="identityalert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
-	        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="addressLine1"/>'+'<span style="color:red;margin:5px;" class="UserAccount">*</span>:</td><td><input type="text" id="add1" value="'+data[7]+'"></td><td style="display:none" id="add1alert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
-	        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="addressLine2"/>'+':</td><td><input type="text" id="add2" value="'+data[12]+'"></td></tr>\
-	        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="addressLine3"/>'+':</td><td><input type="text" id="add3" value="'+data[13]+'"></td></tr>\
-	        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="city"/>'+'<span style="color:red;margin:5px;" class="UserAccount">*</span>:</td><td><input type="text" id="city" value="'+data[10]+'"></td><td style="display:none" id="cityalert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
-	        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="state"/>'+'<span style="color:red;margin:5px;" class="UserAccount">*</span>:</td><td><input type="text" id="state" value="'+data[9]+'"></td><td style="display:none" id="statealert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
-	        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="zipCode"/>'+'<span style="color:red;margin:5px;" class="UserAccount">*</span>:</td><td><input type="text" id="zipcode" value="'+data[8]+'"></td><td style="display:none" id="zipcodealert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
-	        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="phone"/>'+'<span class="UserAccount" style="color:red;margin:5px;">*</span>:</td><td><input type="text" id="phone" value="'+data[11]+'"></td><td style="display:none" id="phonealert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
+	        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine1"/>'+':</td><td><input type="text" id="add1" value="'+data[7]+'"></td><td style="display:none" id="add1alert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
+	        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine2"/>'+':</td><td><input type="text" id="add2" value="'+data[12]+'"></td></tr>\
+	        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="addressLine3"/>'+':</td><td><input type="text" id="add3" value="'+data[13]+'"></td></tr>\
+	        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="city"/>'+':</td><td><input type="text" id="city" value="'+data[10]+'"></td><td style="display:none" id="cityalert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
+	        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="state"/>'+':</td><td><input type="text" id="state" value="'+data[9]+'"></td><td style="display:none" id="statealert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
+	        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="zipCode"/>'+':</td><td><input type="text" id="zipcode" value="'+data[8]+'"></td><td style="display:none" id="zipcodealert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
+	        			 		    	         	                   <tr style="display:none"><td>'+'<liferay-ui:message key="phone"/>'+'<span class="UserAccount" style="color:red;margin:5px;">*</span>:</td><td><input type="text" id="phone" value="'+data[11]+'"></td><td style="display:none" id="phonealert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
 	        			 		    	         	                   <tr><td>'+'<liferay-ui:message key="bankBranch"/>'+'<span style="color:red;margin:5px;">*</span>:</td><td><input type="text" id="bb" value="'+BankBranch+'"></td><td style="display:none" id="bbalert"><p style="color:red"><liferay-ui:message key="can'tbeempty"/></p></td></tr>\
 	     			 		    	         	                   </table></div>')
 	     			 		    	         	                   //console.log();
@@ -1590,11 +2312,7 @@
 	 	    		          			        			        	     	   var newemail = $('#email').val();
 	 	    		          			        			        	     	
 	 	    		          			        			        	           var newadd1 = $('#add1').val();
-	 	    		          			        			        	        if(newadd1==""&&active=="UserAccount"){
-	 	    		          			        			        	     		   $('#add1alert').css('display','block');
-	 	    		          			        			        	     	   }else{
-	 	    		          			        			        	     		$('#add1alert').css('display','none');
-	 	    		          			        			        	     	   }
+	 	    		          			        			        	       
 	 	    		          			        			        	           var newidentity = $('#identity').val();
 	 	    		          			        			        	        if(newidentity==""){
 	 	    		          			        			        	     		   $('#identityalert').css('display','block');
@@ -1604,23 +2322,11 @@
 	 	    		          			        			        	           var newadd2 = $('#add2').val();
 	 	    		          			        			        	           var newadd3 = $('#add3').val();
 	 	    		          			        			        	           var newcity = $('#city').val();
-	 	    		          			        			        	        if(newcity==""&&active=="UserAccount"){
-	 	    		          			        			        	     		   $('#cityalert').css('display','block');
-	 	    		          			        			        	     	   }else{
-	 	    		          			        			        	     		$('#cityalert').css('display','none');
-	 	    		          			        			        	     	   }
+	 	    		          			        			        	     
 	 	    		          			        			        	           var newstate = $('#state').val();
-	 	    		          			        			        	        if(newstate==""&&active=="UserAccount"){
-	 	    		          			        			        	     		   $('#statealert').css('display','block');
-	 	    		          			        			        	     	   }else{
-	 	    		          			        			        	     		$('#statealert').css('display','none');
-	 	    		          			        			        	     	   }
+	 	    		          			        			        	    
 	 	    		          			        			                       var newzipcode = $('#zipcode').val();
-	 	    		          			        			                    if(newzipcode==""&&active=="UserAccount"){
-	 	    		          			        			        	     		   $('#zipcodealert').css('display','block');
-	 	    		          			        			        	     	   }else{
-	 	    		          			        			        	     		$('#zipcodealert').css('display','none');
-	 	    		          			        			        	     	   }
+	 	    		          			        			               
 	 	    		          			        			                       var newphone = $('#phone').val();
 	 	    		          			        			                       if(active=="UserAccount"){
 	 	    		          			        			                    	   if(newphone==""){
@@ -1644,7 +2350,7 @@
 	 	    		          			        			                    	var newdetail = "{"+newbankbranch+"}";
 	 	    		          			        			                       }
 	 	    		          			        			                    if(active=="UserAccount"){
-	 	    		          			        			                    	if(newfullname!=""&&newidentity!=""&&newphone!=""&&$('#bb').val()!=""&&newadd1!=""&&newzipcode!=""&&newstate!=""&&newcity!=""){
+	 	    		          			        			                    	if(newfullname!=""&&newidentity!=""&&newphone!=""&&$('#bb').val()!=""){
 	 	    		          			        			                    	   flag = true;
 	 	    		          			        			                    	}
 	 	    		          			        			                       
@@ -1762,6 +2468,107 @@
 	 	    		          			        	
 	 	    		          			        }
      			 		     	                 },
+     			 		     	      	    {   id:'delete',
+      			 		          			        text: '<liferay-ui:message key="Deletethisaccount"/>',
+      			 		          			        //open: function() { $(this).addClass('b') }, //will append a class called 'b' to the created 'OK' button.
+      			 		          			        click: function() { 
+      			 		          			       
+      			 		          			        		$('#<%=namespace%>DCTabledialog').dialog('close');
+      			 		          			        		$('#<%=namespace%>dcconfirm').dialog({
+      			 		          			        			title:'<liferay-ui:message key="delete"/>',
+      			 		          			        			modal: true,
+      			 		          			        			buttons:[
+      			 		          			        			         {
+      			 		          			        			        	 text:'<liferay-ui:message key="confirm"/>',
+      			 		          			        			        	 click:function(){
+      			 		          			        			        	     	    		          		
+      			 					    		                                     	 Liferay.Service(
+      			 					    		                                    			'/LmAccountServices-portlet.account/update-account-and-holder',
+      			 					    		                                    			  {
+      			 					    		                                    				    accountId: accountid,
+ 			 	    					    		                                    			    accountName: accountname,
+ 			 	    					    		                                    			    accountDetailObject: data[18],
+ 			 	    					    		                                    			    identity:identity,
+ 			 	    					    		                                    			    pmtType:pmtType,
+ 			 	    					    		                                    			    activeFlag: 'N',
+ 			 	    					    		                                    			    expDate:'',
+ 		 	    					    		                                    			        pwd:'',
+ 			 	    					    		                                    			    fullName: fullName,
+ 			 	    					    		                                    			    firstName: '',
+ 			 	    					    		                                    			    lastName: '',
+ 			 	    					    		                                    			    middleName: '',
+ 			 	    					    		                                    			    email: email,
+ 			 	    					    		                                    			    addressLine1: addressLine1,
+ 			 	    					    		                                    			    addressLine2: addressLine2,
+ 			 	    					    		                                    			    addressLine3: addressLine3,
+ 			 	    					    		                                    			    city: city,
+ 			 	    					    		                                    			    state: state,
+ 			 	    					    		                                    			    zipCode: zipcode,
+ 			 	    					    		                                    			    countryCd: countryCd,
+ 			 	    					    		                                    			    phone: phone,
+ 			 	    					    		                                    			    identityNum: "",
+ 			 	    					    		                                    			    localeCd: "<%=langId %>"
+      			 					    		                                    			  },function(response){
+      			 					    		                                    				if(response.status.code==200){
+      			 					    		                                    					dataSet.splice(window.index, 1);
+ 			 		     			 					    		                                      for(var i=0;i<accountinfo.length;i++){
+ 			 		     			 	    					    		                            	  if(accountinfo[i].accountId==accountid){
+ 			 		     			 	    					    		                            		accountinfo.splice(i,1);
+ 			 		     			 	    					    		                            		break;
+ 			 		     			 	    					    		                            	  }
+ 			 		     			 	    					    		                              }
+ 			 		     			 					    		                                   generateDCTable(dataSet);
+ 			 		     			 					    		                                   $('#<%=namespace%>dcconfirm').dialog('close');
+      			 					    		                                    				}else{
+      			 					    		                                    					$('#<%=namespace%>dcconfirm').dialog('close');
+ 		 	    					    		                                    		        	$('#<%=namespace%>error').dialog({
+ 		 	    					                                 			        					title: '<liferay-ui:message key="error"/>',
+ 		 	    					                                 			        			        modal: true,
+ 		 	    					                                 			        			        width: screenWidth,
+ 		 	    					                                 			        			        height:'auto',
+ 		 	    					                                 			        			        resizable:false,
+ 		 	    					                                 			        			        position: { my: "center", at: "center", of: window },
+ 		 	    					                                 			        			        open: function(){
+ 		 	    					                                 			        			        	$('#<%=namespace%>errordetail').html('<p>'+obj.status.message+'<p>')
+ 		 	    					                                 			        			        	
+ 		 	    					                                 			        			        },
+ 		 	    					                                 			        			        buttons:[
+ 		 	    					                                 			        			                 {
+ 		 	    					                                 			        			                	id:'error',
+ 		 	    					                                 			        	         			        text: '<liferay-ui:message key="confirm"/>', 
+ 		 	    					                                 			        	         			        click: function() {
+ 		 	    					                                 			        	         			        	
+ 		 	    					                                 			        	         			        	$('#<%=namespace%>error').dialog('close');
+ 		 	    					                                 			        	         			        }
+ 		 	    					                                 			        			                 }
+ 		 	    					                                 			        			                 
+ 		 	    					                                 			        			                 ]
+ 		 	    					                                 			        				})
+      			 					    		                                    				}
+      			 		     			 		          			        			        	   
+      			 					    		                                    				  
+      			 					    		                                    			  }) 
+      			 					    		                                    			  
+      			 					    		                         
+      			 		          			        			        	 }
+      			 		          			        			         },
+      			 		          			        			         {
+      			 		          			        			        	 text:'<liferay-ui:message key="Cancel"/>',
+      			 		          			        			        	 click:function(){
+      			 		          			        			        		$('#<%=namespace%>dcconfirm').dialog('close');
+      			 		          			        			        	 }
+      			 		          			        			         }
+      			 		          			        			         
+      			 		          			        			         ]
+      			 		          			        		
+      			 		          			        			
+      			 		          			        		})
+      			 		   			    			     $(".ui-dialog-titlebar").css("background-color", "#61cc61");
+      			 		   	    		        	     $(".ui-dialog-title").css("color", "white");
+      			 		   	    		        	     $(".ui-dialog").css("position", "center");
+      			 		          			        	
+      			 		          			        }
+      			 		          			    },
      			 		          			  ]
      			 			    	 
      			 			    	 
